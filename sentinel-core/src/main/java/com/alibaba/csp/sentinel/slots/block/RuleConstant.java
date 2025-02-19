@@ -18,12 +18,26 @@ package com.alibaba.csp.sentinel.slots.block;
 import com.alibaba.csp.sentinel.node.IntervalProperty;
 
 /**
+ * 流量规则常量
+ *
  * @author youji.zj
  * @author jialiang.linjl
  */
 public final class RuleConstant {
 
+    /**
+     * 基于线程总数的流控阈值
+     *
+     * <p>通过并发线程数进行限制，当线程数在特定资源上堆积到一定的数量之后，
+     * 对该资源的请求就会被拒绝。堆积的线程完成任务后才开始继续接受请求
+     */
     public static final int FLOW_GRADE_THREAD = 0;
+
+    /**
+     * 基于QPS的流控阈值
+     *
+     * <p>通过响应时间对资源进行降级，限制每秒查询数
+     */
     public static final int FLOW_GRADE_QPS = 1;
 
     public static final int DEGRADE_GRADE_RT = 0;
@@ -39,16 +53,49 @@ public final class RuleConstant {
     public static final int DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT = 5;
     public static final int DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT = 5;
 
+    /**
+     * 白名单模式
+     *
+     * @see com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule
+     */
     public static final int AUTHORITY_WHITE = 0;
+    /**
+     * 黑名单
+     *
+     * @see com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule
+     */
     public static final int AUTHORITY_BLACK = 1;
 
+    // 流控策略
+    /**
+     * 直接流量控制，按来源
+     */
     public static final int STRATEGY_DIRECT = 0;
+    /**
+     * 相关流量控制，及相关资源
+     */
     public static final int STRATEGY_RELATE = 1;
+    /**
+     * 链式流量控制，按入口资源
+     */
     public static final int STRATEGY_CHAIN = 2;
 
+    // 流控控制行为
+    /**
+     * 直接拒绝
+     */
     public static final int CONTROL_BEHAVIOR_DEFAULT = 0;
+    /**
+     * 热身
+     */
     public static final int CONTROL_BEHAVIOR_WARM_UP = 1;
+    /**
+     * 速率限制器
+     */
     public static final int CONTROL_BEHAVIOR_RATE_LIMITER = 2;
+    /**
+     * 热身+速率限制器
+     */
     public static final int CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER = 3;
 
     public static final int DEFAULT_BLOCK_STRATEGY = 0;

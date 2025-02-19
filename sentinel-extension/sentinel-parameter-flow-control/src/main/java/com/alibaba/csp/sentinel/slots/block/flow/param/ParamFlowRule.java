@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
- * Rules for "hot-spot" frequent parameter flow control.
+ * 热点频繁参数流控规则
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -40,45 +40,55 @@ public class ParamFlowRule extends AbstractRule {
     }
 
     /**
-     * The threshold type of flow control (0: thread count, 1: QPS).
+     * QPS流控类型
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
-     * Parameter index.
+     * 参数索引
      */
     private Integer paramIdx;
 
     /**
-     * The threshold count.
+     * 阈值
      */
     private double count;
 
     /**
-     * Traffic shaping behavior (since 1.6.0).
+     * 流量整形行为，默认拒绝
      */
     private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
 
+    /**
+     * 最大排队时间
+     */
     private int maxQueueingTimeMs = 0;
+
+    /**
+     * 突发计数
+     */
     private int burstCount = 0;
+    /**
+     * 持续时间（秒）
+     */
     private long durationInSec = 1;
 
     /**
-     * Original exclusion items of parameters.
+     * 参数的原始排除项
      */
     private List<ParamFlowItem> paramFlowItemList = new ArrayList<ParamFlowItem>();
 
     /**
-     * Parsed exclusion items of parameters. Only for internal use.
+     * 解析参数排除项，仅供内部使用
      */
     private Map<Object, Integer> hotItems = new HashMap<Object, Integer>();
 
     /**
-     * Indicating whether the rule is for cluster mode.
+     * 指示该规则是否用于集群模式
      */
     private boolean clusterMode = false;
     /**
-     * Cluster mode specific config for parameter flow rule.
+     * 用于参数流控规则的集群模式下特定配置
      */
     private ParamFlowClusterConfig clusterConfig;
 

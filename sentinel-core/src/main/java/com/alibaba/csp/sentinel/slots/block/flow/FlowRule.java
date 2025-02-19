@@ -19,15 +19,11 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 
 /**
- * <p>
- * Each flow rule is mainly composed of three factors: <strong>grade</strong>,
- * <strong>strategy</strong> and <strong>controlBehavior</strong>:
- * </p>
+ * 每条流控规则主要有三个因素组成：
  * <ul>
- *     <li>The {@link #grade} represents the threshold type of flow control (by QPS or thread count).</li>
- *     <li>The {@link #strategy} represents the strategy based on invocation relation.</li>
- *     <li>The {@link #controlBehavior} represents the QPS shaping behavior (actions on incoming request when QPS
- *     exceeds the threshold).</li>
+ *     <li>等级：代表流控的阈值类型，基于QPS还是线程数</li>
+ *     <li>策略：代表基于调用关系的策略</li>
+ *     <li>控制行为：代表QPS的调整行为，当QPS超过阈值时如果处理到来的请求</li>
  * </ul>
  *
  * @author jialiang.linjl
@@ -47,50 +43,64 @@ public class FlowRule extends AbstractRule {
     }
 
     /**
-     * The threshold type of flow control (0: thread count, 1: QPS).
+     * 流量控制的阈值类型（0：线程总数，1：QPS）
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
-     * Flow control threshold count.
+     * 流控阈值
      */
     private double count;
 
     /**
-     * Flow control strategy based on invocation chain.
+     * 基于调用链的流控策略
      *
-     * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
-     * {@link RuleConstant#STRATEGY_RELATE} for relevant flow control (with relevant resource);
-     * {@link RuleConstant#STRATEGY_CHAIN} for chain flow control (by entrance resource).
+     * <p>流控策略可选如下：
+     * <ul>
+     *     <li>{@link RuleConstant#STRATEGY_DIRECT} 用于直接流量控制（按来源）</li>
+     *     <li>{@link RuleConstant#STRATEGY_RELATE} 用于相关流量控制（及相关资源）</li>
+     *     <li>{@link RuleConstant#STRATEGY_CHAIN} 用于链式流量控制（按入口资源）</li>
+     * </ul>
      */
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
     /**
-     * Reference resource in flow control with relevant resource or context.
+     * 流控中引用相关资源或上下文的资源
      */
     private String refResource;
 
     /**
-     * Rate limiter control behavior.
-     * 0. default(reject directly), 1. warm up, 2. rate limiter, 3. warm up + rate limiter
+     * 控制行为
+     *
+     * <p>速率限制器可选如下：
+     * <ul>
+     *     <li>{@link RuleConstant#CONTROL_BEHAVIOR_DEFAULT} 直接拒绝</li>
+     *     <li>{@link RuleConstant#CONTROL_BEHAVIOR_WARM_UP} 热身</li>
+     *     <li>{@link RuleConstant#CONTROL_BEHAVIOR_RATE_LIMITER} 速率限制器</li>
+     *     <li>{@link RuleConstant#CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER} 热身+速率限制器</li>
+     * </ul>
      */
     private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
 
     private int warmUpPeriodSec = 10;
 
     /**
-     * Max queueing time in rate limiter behavior.
+     * 当为速率限制器行为中的最大排队时间
      */
     private int maxQueueingTimeMs = 500;
 
-    private boolean clusterMode;
     /**
-     * Flow rule config for cluster mode.
+     * 是否为集群模式
+     */
+    private boolean clusterMode;
+
+    /**
+     * 集群模式的流控规则配置
      */
     private ClusterFlowConfig clusterConfig;
 
     /**
-     * The traffic shaping (throttling) controller.
+     * 流量整形（限制）控制器
      */
     private TrafficShapingController controller;
 

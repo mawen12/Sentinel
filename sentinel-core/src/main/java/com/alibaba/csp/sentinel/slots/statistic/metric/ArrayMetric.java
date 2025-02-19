@@ -28,7 +28,7 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLe
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
- * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
+ * Sentinel中使用{@link BucketLeapArray}作为底层的基础指标类。
  *
  * @author jialiang.linjl
  * @author Eric Zhao

@@ -53,7 +53,7 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.util.concurrent.GenericFutureListener;
 
 /**
- * Netty transport client implementation for Sentinel cluster transport.
+ * 基于Netty实现的{@link ClusterTransportClient}。
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -61,22 +61,54 @@ import io.netty.util.concurrent.GenericFutureListener;
 public class NettyTransportClient implements ClusterTransportClient {
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    /**
+     * 单守护线程的调度执行服务
+     */
     private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-cluster-transport-client-scheduler", true));
+            new NamedThreadFactory("sentinel-cluster-transport-client-scheduler", true));
 
+    /**
+     * 重新连接延迟（毫秒）
+     */
     public static final int RECONNECT_DELAY_MS = 2000;
 
+    /**
+     * 主机
+     */
     private final String host;
+    /**
+     * 端口
+     */
     private final int port;
 
+    /**
+     * Netty 信道
+     */
     private Channel channel;
+    /**
+     * NIO 时间轮询分组
+     */
     private NioEventLoopGroup eventLoopGroup;
+    /**
+     * 令牌客户端处理器
+     */
     private TokenClientHandler clientHandler;
 
+    /**
+     * 线程安全的id生成器
+     */
     private final AtomicInteger idGenerator = new AtomicInteger(0);
+    /**
+     * 线程安全的客户端状态
+     */
     private final AtomicInteger currentState = new AtomicInteger(ClientConstants.CLIENT_STATUS_OFF);
+    /**
+     * 线程安全的失败连接时间
+     */
     private final AtomicInteger failConnectedTime = new AtomicInteger(0);
-
+    /**
+     * 线程安全的是否重试标志
+     */
     private final AtomicBoolean shouldRetry = new AtomicBoolean(true);
 
     public NettyTransportClient(String host, int port) {
@@ -136,6 +168,7 @@ public class NettyTransportClient implements ClusterTransportClient {
     private Runnable disconnectCallback = new Runnable() {
         @Override
         public void run() {
+            // 如果不允许重试，则直接返回
             if (!shouldRetry.get()) {
                 return;
             }
@@ -145,6 +178,7 @@ public class NettyTransportClient implements ClusterTransportClient {
                     if (shouldRetry.get()) {
                         RecordLog.info("[NettyTransportClient] Reconnecting to server <{}:{}>", host, port);
                         try {
+                            // 开启连接客户端
                             startInternal();
                         } catch (Exception e) {
                             RecordLog.warn("[NettyTransportClient] Failed to reconnect to server", e);
@@ -178,9 +212,10 @@ public class NettyTransportClient implements ClusterTransportClient {
 
     @Override
     public void stop() throws Exception {
-        // Stop retrying for connection.
+        // 停止重试连接
         shouldRetry.set(false);
 
+        // 如果是启动中状态，则一直等待
         while (currentState.get() == ClientConstants.CLIENT_STATUS_PENDING) {
             try {
                 Thread.sleep(200);
@@ -189,7 +224,9 @@ public class NettyTransportClient implements ClusterTransportClient {
             }
         }
 
+        // 清理资源
         cleanUp();
+        // 重置失败连接次数
         failConnectedTime.set(0);
 
         RecordLog.info("[NettyTransportClient] Cluster transport client stopped");

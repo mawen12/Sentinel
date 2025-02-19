@@ -34,6 +34,10 @@ public final class Constants {
     public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.8.8");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;
+
+    /**
+     * 限制了最大的{@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot}的数量，不能超过6000。
+     */
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
 
     public final static String ROOT_ID = "machine-root";
@@ -55,10 +59,9 @@ public final class Constants {
     public final static String SYSTEM_LOAD_RESOURCE_NAME = "__system_load__";
 
     /**
-     * Global ROOT statistic node that represents the universal parent node.
+     * 代表通用父节点的全局ROOT统计节点
      */
-    public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN),
-        new ClusterNode(ROOT_ID, ResourceTypeConstants.COMMON));
+    public final static DefaultNode ROOT = new EntranceNode(new StringResourceWrapper(ROOT_ID, EntryType.IN), new ClusterNode(ROOT_ID, ResourceTypeConstants.COMMON));
 
     /**
      * Global statistic node for inbound traffic. Usually used for {@code SystemRule} checking.

@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import java.lang.annotation.*;
 
 /**
- * The annotation indicates a definition of Sentinel resource.
+ * 定义Sentinel资源的注解
  *
  * @author Eric Zhao
  * @author zhaoyuguang
@@ -32,74 +32,73 @@ import java.lang.annotation.*;
 public @interface SentinelResource {
 
     /**
-     * @return name of the Sentinel resource
+     * @return Sentinel资源名称
      */
     String value() default "";
 
     /**
-     * @return the entry type (inbound or outbound), outbound by default
+     * @return 入口类型（入站还是出站），默认为出站
      */
     EntryType entryType() default EntryType.OUT;
 
     /**
-     * @return the classification (type) of the resource
+     * @return 资源的分类（类型）
      * @since 1.7.0
      */
     int resourceType() default 0;
 
     /**
-     * @return name of the block exception function, empty by default
+     * @return 阻塞异常函数的名称，默认为空
      */
     String blockHandler() default "";
 
     /**
-     * The {@code blockHandler} is located in the same class with the original method by default.
-     * However, if some methods share the same signature and intend to set the same block handler,
-     * then users can set the class where the block handler exists. Note that the block handler method
-     * must be static.
+     * {@link #blockHandler()}默认与原始方法位于同一个类中。
+     * 然而，如果某些方法共享相同的签名（重载）并打算设置相同的{@link #blockHandler()}，
+     * 那么用户可以设置{@link #blockHandler()}所在的类。
+     *
+     * <p>请注意：{@link #blockHandler()}方法必须是静态的。
      *
      * @return the class where the block handler exists, should not provide more than one classes
      */
     Class<?>[] blockHandlerClass() default {};
 
     /**
-     * @return name of the fallback function, empty by default
+     * @return 回退函数的名称，默认为空
      */
     String fallback() default "";
 
     /**
-     * The {@code defaultFallback} is used as the default universal fallback method.
-     * It should not accept any parameters, and the return type should be compatible
-     * with the original method.
+     * 该方法被用作默认统一的回退方法。它不应该允许任何参数，且返回值应与原方法适配。
      *
-     * @return name of the default fallback method, empty by default
+     * @return 默认回退方法的名称，默认为空
      * @since 1.6.0
      */
     String defaultFallback() default "";
 
     /**
-     * The {@code fallback} is located in the same class with the original method by default.
-     * However, if some methods share the same signature and intend to set the same fallback,
-     * then users can set the class where the fallback function exists. Note that the shared fallback method
-     * must be static.
+     * {@link #fallback()}默认与原始方法位于同一个类中。
+     * 然而，如果某些方法共享相同的签名（重载）并打算设置相同的{@link #blockHandler()}，
+     * 那么用户可以设置{@link #blockHandler()}所在的类。
      *
-     * @return the class where the fallback method is located (only single class)
+     * <p>请注意：{@link #fallback()}方法必须是静态的。
+     *
+     * @return fallback方法所在的类（仅限单个类）
      * @since 1.6.0
      */
     Class<?>[] fallbackClass() default {};
 
     /**
-     * @return the list of exception classes to trace, {@link Throwable} by default
+     * @return 跟踪的异常列表，默认为{@link Throwable}
      * @since 1.5.1
      */
     Class<? extends Throwable>[] exceptionsToTrace() default {Throwable.class};
     
     /**
-     * Indicates the exceptions to be ignored. Note that {@code exceptionsToTrace} should
-     * not appear with {@code exceptionsToIgnore} at the same time, or {@code exceptionsToIgnore}
-     * will be of higher precedence.
+     * 被忽略的异常。注意{@link #exceptionsToTrace()}不应出现在该方法中。
+     * 否则该方法的优先级会更高。
      *
-     * @return the list of exception classes to ignore, empty by default
+     * @return 忽略的异常类列表，默认为空
      * @since 1.6.0
      */
     Class<? extends Throwable>[] exceptionsToIgnore() default {};

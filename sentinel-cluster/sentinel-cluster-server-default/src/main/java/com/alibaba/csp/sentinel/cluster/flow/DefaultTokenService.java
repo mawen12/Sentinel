@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.spi.Spi;
 import java.util.Collection;
 
 /**
- * Default implementation for cluster {@link TokenService}.
+ * 用于集群{@link TokenService}的默认实现。
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -84,14 +84,28 @@ public class DefaultTokenService implements TokenService {
         ConcurrentClusterFlowChecker.releaseConcurrentToken(tokenId);
     }
 
+    /**
+     * @param id id
+     * @param count 总和
+     * @return 请求是否非法
+     */
     private boolean notValidRequest(Long id, int count) {
         return id == null || id <= 0 || count <= 0;
     }
 
+    /**
+     * @param address 地址
+     * @param id id
+     * @param count 总和
+     * @return 请求是否非法
+     */
     private boolean notValidRequest(String address, Long id, int count) {
         return address == null || "".equals(address) || id == null || id <= 0 || count <= 0;
     }
 
+    /**
+     * @return 包含错误请求的结果
+     */
     private TokenResult badRequest() {
         return new TokenResult(TokenResultStatus.BAD_REQUEST);
     }

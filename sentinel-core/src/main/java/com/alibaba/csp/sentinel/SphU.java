@@ -22,47 +22,36 @@ import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 
 /**
- * <p>The fundamental Sentinel API for recording statistics and performing rule checking for resources.</p>
- * <p>
- * Conceptually, physical or logical resource that need protection should be
- * surrounded by an entry. The requests to this resource will be blocked if any
- * criteria is met, eg. when any {@link Rule}'s threshold is exceeded. Once blocked,
- * a {@link BlockException} will be thrown.
- * </p>
- * <p>
- * To configure the criteria, we can use <code>XxxRuleManager.loadRules()</code> to load rules.
- * </p>
+ * 用于记录统计信息和对资源执行规则检查的基本Sentinel API。
  *
- * <p>
- * Following code is an example, {@code "abc"} represent a unique name for the
- * protected resource:
- * </p>
+ * <p>从概念上来说，需要保护的物理或逻辑资源应该被条目包围。如果满足任何条件，则对该资源的请求将被阻止。
+ * 例如：当超过任何{@link Rule}的阈值时，一旦请求被阻止，将抛出{@link BlockException}。
  *
- * <pre>
+ * <p>为了配置条件，我们可以使用{@code XxxRuleManager#loadRules()}来加载规则。
+ *
+ * <p>代码示例：{@code abc}代表被保护的资源名称
+ * <pre>{@code
  *  public void foo() {
- *     Entry entry = null;
- *     try {
- *        entry = SphU.entry("abc");
- *        // resource that need protection
- *     } catch (BlockException blockException) {
- *         // when goes there, it is blocked
- *         // add blocked handle logic here
- *     } catch (Throwable bizException) {
- *         // business exception
- *         Tracer.trace(bizException);
- *     } finally {
- *         // ensure finally be executed
- *         if (entry != null){
- *             entry.exit();
- *         }
- *     }
+ *      Entry entry = null;
+ *      try {
+ *          entry = Spu.entry("abc");
+ *      } catch (BlockException e) {
+ *          // 当执行到此处时，代表对资源的请求被阻塞。
+ *          // 在此处增加处理阻塞的代码
+ *      } catch (Throwable e) {
+ *          // 业务异常
+ *          Tracer.trace(e);
+ *      } finally {
+ *          // 确保条目被释放
+ *          if (entry != null) {
+ *              entry.exit();
+ *          }
+ *      }
  *  }
- * </pre>
+ * }</pre>
  *
- * <p>
- * Make sure {@code SphU.entry()} and {@link Entry#exit()} be paired in the same thread,
- * otherwise {@link ErrorEntryFreeException} will be thrown.
- * </p>
+ * <p>确保{@link SphU#entry(String)}和{@link Entry#exit()}成对出现在同一个线程中。
+ * 否则将抛出{@link ErrorEntryFreeException}。
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -72,120 +61,119 @@ public class SphU {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
+    /**
+     * 私有构造器，应该通过静态方法来使用该类
+     */
     private SphU() {}
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则校验
      *
-     * @param name the unique name of the protected resource
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name 受保护资源的唯一名称
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(String name) throws BlockException {
         return Env.sph.entry(name, EntryType.OUT, 1, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * 检查关于受保护方法的所有{@link Rule}
      *
-     * @param method the protected method
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param method 受保护的方法
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(Method method) throws BlockException {
         return Env.sph.entry(method, EntryType.OUT, 1, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * 检查关于受保护方法的所有{@link Rule}
      *
-     * @param method     the protected method
-     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param method     受保护的方法
+     * @param batchCount 调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(Method method, int batchCount) throws BlockException {
         return Env.sph.entry(method, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则检查
      *
-     * @param name       the unique string for the resource
-     * @param batchCount the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name       资源的唯一名称
+     * @param batchCount 调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(String name, int batchCount) throws BlockException {
         return Env.sph.entry(name, EntryType.OUT, batchCount, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * 检查受保护方法的所有{@link Rule}
      *
-     * @param method      the protected method
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param method      受保护的方法
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(Method method, EntryType trafficType) throws BlockException {
         return Env.sph.entry(method, trafficType, 1, OBJECTS0);
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则检查
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name        受保护资源的唯一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(String name, EntryType trafficType) throws BlockException {
         return Env.sph.entry(name, trafficType, 1, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * 检查受保护方法的所有{@link Rule}
      *
-     * @param method      the protected method
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     *
+     * @param method      受保护的方法
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param batchCount  调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(Method method, EntryType trafficType, int batchCount) throws BlockException {
         return Env.sph.entry(method, trafficType, batchCount, OBJECTS0);
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则校验
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name        受保护资源的唯一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param batchCount  调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(String name, EntryType trafficType, int batchCount) throws BlockException {
         return Env.sph.entry(name, trafficType, batchCount, OBJECTS0);
     }
 
     /**
-     * Checking all {@link Rule}s about the protected method.
+     * 校验受保护方法的所有{@link Rule}
      *
-     * @param method      the protected method
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @param args        args for parameter flow control or customized slots
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param method      受保护方法
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param batchCount  调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @param args        用于参数流控或自定义Slot的参数
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(Method method, EntryType trafficType, int batchCount, Object... args)
         throws BlockException {
@@ -193,15 +181,14 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则检查
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @param args        args for parameter flow control
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name        受保护资源的唯一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param batchCount  调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @param args        用于参数流控或自定义Slot的参数
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      */
     public static Entry entry(String name, EntryType trafficType, int batchCount, Object... args)
         throws BlockException {
@@ -209,10 +196,10 @@ public class SphU {
     }
 
     /**
-     * Record statistics and check all rules of the resource that indicates an async invocation.
+     * 记录统计和检查资源的规则，这是一个异步调用
      *
-     * @param name the unique name of the protected resource
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name 受保护资源的统一名称
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      * @since 0.2.0
      */
     public static AsyncEntry asyncEntry(String name) throws BlockException {
@@ -220,14 +207,13 @@ public class SphU {
     }
 
     /**
-     * Record statistics and check all rules of the resource that indicates an async invocation.
+     * 记录统计和检查资源的规则，这是一个异步调用
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name        受保护资源的统一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @return Entry 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      * @since 0.2.0
      */
     public static AsyncEntry asyncEntry(String name, EntryType trafficType) throws BlockException {
@@ -235,16 +221,15 @@ public class SphU {
     }
 
     /**
-     * Record statistics and check all rules of the resource that indicates an async invocation.
+     * 记录统计和检查资源的规则，这是一个异步调用
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
-     * @param batchCount  the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @param args        args for parameter flow control
-     * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name        受保护资源的统一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param batchCount  调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @param args        用于参数流控的参数
+     * @return 该调用的 {@link Entry} (用于标记调用完成和获取上下文数据）
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      * @since 0.2.0
      */
     public static AsyncEntry asyncEntry(String name, EntryType trafficType, int batchCount, Object... args)
@@ -253,10 +238,10 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource. The entry is prioritized.
+     * 记录统计和检查资源的规则。该条目具有优先权。
      *
-     * @param name the unique name for the protected resource
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @param name 受保护资源的唯一名称
+     * @throws BlockException 如果满足阻塞条件（例如：度量标准超出了任何规则的阈值）
      * @since 1.4.0
      */
     public static Entry entryWithPriority(String name) throws BlockException {
@@ -264,14 +249,13 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource. The entry is prioritized.
+     * 记录统计并对给定资源执行规则校验。该条目具有优先权。
      *
-     * @param name        the unique name for the protected resource
-     * @param trafficType the traffic type (inbound, outbound or internal). This is used
-     *                    to mark whether it can be blocked when the system is unstable,
-     *                    only inbound traffic could be blocked by {@link SystemRule}
+     * @param name        受保护资源的唯一名称
+     * @param trafficType 流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.4.0
      */
     public static Entry entryWithPriority(String name, EntryType trafficType) throws BlockException {
@@ -279,15 +263,14 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则检查
      *
-     * @param name         the unique name for the protected resource
-     * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
-     *                     to mark whether it can be blocked when the system is unstable,
-     *                     only inbound traffic could be blocked by {@link SystemRule}
+     * @param name         受保护资源的唯一字符串名称
+     * @param resourceType 资源分类 (e.g. Web or RPC)
+     * @param trafficType  流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.7.0
      */
     public static Entry entry(String name, int resourceType, EntryType trafficType) throws BlockException {
@@ -295,16 +278,15 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource.
+     * 记录统计并对给定资源执行规则检查
      *
-     * @param name         the unique name for the protected resource
-     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
-     *                     to mark whether it can be blocked when the system is unstable,
-     *                     only inbound traffic could be blocked by {@link SystemRule}
-     * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param args         args for parameter flow control or customized slots
+     * @param name         受保护资源的唯一字符串名称
+     * @param resourceType 资源分类 (e.g. Web or RPC)
+     * @param trafficType  流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param args         用于参数流控或自定义Slot的参数
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.7.0
      */
     public static Entry entry(String name, int resourceType, EntryType trafficType, Object[] args)
@@ -313,15 +295,14 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
+     * 记录统计并对给定资源执行规则检查，这是一个异步调用
      *
-     * @param name         the unique name for the protected resource
-     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
-     *                     to mark whether it can be blocked when the system is unstable,
-     *                     only inbound traffic could be blocked by {@link SystemRule}
-     * @param resourceType classification of the resource (e.g. Web or RPC)
+     * @param name         受保护资源的唯一字符串名称
+     * @param resourceType 资源分类 (e.g. Web or RPC)
+     * @param trafficType  流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.7.0
      */
     public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType)
@@ -330,16 +311,15 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
+     * 记录统计并对给定资源执行规则检查，这是一个异步调用
      *
-     * @param name         the unique name for the protected resource
-     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
-     *                     to mark whether it can be blocked when the system is unstable,
-     *                     only inbound traffic could be blocked by {@link SystemRule}
-     * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param args         args for parameter flow control or customized slots
+     * @param name         受保护资源的唯一字符串名称
+     * @param resourceType 资源分类 (e.g. Web or RPC)
+     * @param trafficType  流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param args         用于参数流控或自定义Slot的参数
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.7.0
      */
     public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType, Object[] args)
@@ -348,21 +328,19 @@ public class SphU {
     }
 
     /**
-     * Record statistics and perform rule checking for the given resource that indicates an async invocation.
+     * 记录统计并对给定资源执行规则检查，这是一个异步调用
      *
-     * @param name         the unique name for the protected resource
-     * @param trafficType  the traffic type (inbound, outbound or internal). This is used
-     *                     to mark whether it can be blocked when the system is unstable,
-     *                     only inbound traffic could be blocked by {@link SystemRule}
-     * @param resourceType classification of the resource (e.g. Web or RPC)
-     * @param batchCount   the amount of calls within the invocation (e.g. batchCount=2 means request for 2 tokens)
-     * @param args         args for parameter flow control or customized slots
+     * @param name         受保护资源的唯一字符串名称
+     * @param trafficType  流量类型（入站，出战或内部），被用于标记当系统不稳定时是否阻塞。
+     *                    需要注意的是，只有入站流量才会被{@link SystemRule}阻塞。
+     * @param resourceType 资源分类 (e.g. Web or RPC)
+     * @param batchCount   调用中的调用次数（例如：batchCount=2 代表请求2个令牌）
+     * @param args         用于参数流控或自定义Slot的参数
      * @return the {@link Entry} of this invocation (used for mark the invocation complete and get context data)
-     * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      * @since 1.7.0
      */
-    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType, int batchCount,
-                                        Object[] args) throws BlockException {
+    public static AsyncEntry asyncEntry(String name, int resourceType, EntryType trafficType, int batchCount, Object[] args) throws BlockException {
         return Env.sph.asyncEntryWithType(name, resourceType, trafficType, batchCount, false, args);
     }
 }

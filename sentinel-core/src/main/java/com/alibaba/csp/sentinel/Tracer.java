@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.context.NullContext;
@@ -23,14 +24,25 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
- * This class is used to record other exceptions except block exception.
+ * 用于记录除{@link BlockException}外的其他异常
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class Tracer {
 
+    /**
+     * 跟踪的异常
+     *
+     * @see SentinelResource#exceptionsToTrace()
+     */
     protected static Class<? extends Throwable>[] traceClasses;
+
+    /**
+     * 忽略的异常
+     *
+     * @see SentinelResource#exceptionsToIgnore()
+     */
     protected static Class<? extends Throwable>[] ignoreClasses;
 
     protected static Predicate<Throwable> exceptionPredicate;
@@ -38,7 +50,7 @@ public class Tracer {
     protected Tracer() {}
 
     /**
-     * Trace provided {@link Throwable} to the resource entry in current context.
+     * 跟踪当前上下文中提供的{@link Throwable}到资源条目
      *
      * @param e exception to record
      */
@@ -47,7 +59,7 @@ public class Tracer {
     }
 
     /**
-     * Trace provided {@link Throwable} to current entry in current context.
+     * 跟踪当前上下文中提供的{@link Throwable}到资源条目
      *
      * @param e     exception to record
      * @param count exception count to add
@@ -58,7 +70,7 @@ public class Tracer {
     }
 
     /**
-     * Trace provided {@link Throwable} to current entry of given entrance context.
+     * 跟踪给定入口上下文中提供的{@link Throwable}到资源条目
      *
      * @param e     exception to record
      * @param context target entrance context
@@ -76,7 +88,7 @@ public class Tracer {
     }
 
     /**
-     * Trace provided {@link Throwable} and add exception count to current entry in provided context.
+     * 跟踪给定入口上下文中提供的{@link Throwable}和增加异常数到资源条目
      *
      * @param e     exception to record
      * @param count exception count to add
@@ -95,7 +107,7 @@ public class Tracer {
     }
 
     /**
-     * Trace provided {@link Throwable} to the given resource entry.
+     * 跟踪提供的{@link Throwable}到给定资源条目
      *
      * @param e exception to record
      * @since 1.4.2
@@ -116,11 +128,10 @@ public class Tracer {
     }
 
     /**
-     * Set exception to trace. If not set, all Exception except for {@link BlockException} will be traced.
-     * <p>
-     * Note that if both {@link #setExceptionsToIgnore(Class[])} and this method is set,
-     * the ExceptionsToIgnore will be of higher precedence.
-     * </p>
+     * 设置跟踪的异常。如果未设置，便跟踪除{@link BlockException}外的所有异常
+     *
+     * <p>如果该方法和{@link #setExceptionsToIgnore(Class[])}均设置了相同的异常，
+     * 那么{@link #setExceptionsToIgnore(Class[])}具有更高优先级
      *
      * @param traceClasses the list of exception classes to trace.
      * @since 1.6.1
@@ -132,7 +143,7 @@ public class Tracer {
     }
 
     /**
-     * Get exception classes to trace.
+     * 获取跟踪的异常类
      *
      * @return an array of exception classes to trace.
      * @since 1.6.1
@@ -193,7 +204,7 @@ public class Tracer {
     }
 
     /**
-     * Check whether the throwable should be traced.
+     * 检查是否跟踪给定异常
      *
      * @param t the throwable to check.
      * @return true if the throwable should be traced, else return false.

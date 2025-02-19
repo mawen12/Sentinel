@@ -16,6 +16,8 @@
 package com.alibaba.csp.sentinel.cluster.client;
 
 /**
+ * 客户端常量
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
@@ -25,8 +27,17 @@ public final class ClientConstants {
     public static final int TYPE_FLOW = 1;
     public static final int TYPE_PARAM_FLOW = 2;
 
+    /**
+     * 客户端为关闭状态
+     */
     public static final int CLIENT_STATUS_OFF = 0;
+    /**
+     * 客户端为发送中状态
+     */
     public static final int CLIENT_STATUS_PENDING = 1;
+    /**
+     * 客户端为已启动状态
+     */
     public static final int CLIENT_STATUS_STARTED = 2;
 
     private ClientConstants() {}

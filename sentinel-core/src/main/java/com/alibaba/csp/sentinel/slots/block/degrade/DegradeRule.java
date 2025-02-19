@@ -21,25 +21,18 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import java.util.Objects;
 
 /**
- * <p>
- * Degrade is used when the resources are in an unstable state, these resources
- * will be degraded within the next defined time window. There are two ways to
- * measure whether a resource is stable or not:
- * </p>
+ * 当资源处于不可用状态时便会使用降级。这些资源将会在下一个定义的时间窗口被降级。
+ * 有两种方式检查一个资源是否稳定：
  * <ul>
- * <li>
- * Average response time ({@code DEGRADE_GRADE_RT}): When
- * the average RT exceeds the threshold ('count' in 'DegradeRule', in milliseconds), the
- * resource enters a quasi-degraded state. If the RT of next coming 5
- * requests still exceed this threshold, this resource will be downgraded, which
- * means that in the next time window (defined in 'timeWindow', in seconds) all the
- * access to this resource will be blocked.
- * </li>
- * <li>
- * Exception ratio: When the ratio of exception count per second and the
- * success qps exceeds the threshold, access to the resource will be blocked in
- * the coming window.
- * </li>
+ *     <li>
+ *         平均响应时间（Average response time），对应{@link RuleConstant#DEGRADE_GRADE_RT}，
+ *         当平均RT超过阈值{@link #count}时，资源将进入“准降级”的状态。如果后续5次请求的RT仍然超过{@link #count}时，
+ *         该资源将被降级，意味着在下一个时间窗口{@link #timeWindow}内对该资源的访问都会被阻塞。
+ *     </li>
+ *     <li>
+ *         异常率（Exception ratio），当每秒异常总数与成功QPS的比率超过阈值，在到来的时间窗口，
+ *         对该资源的访问都会被阻塞。
+ *     </li>
  * </ul>
  *
  * @author jialiang.linjl
@@ -54,42 +47,46 @@ public class DegradeRule extends AbstractRule {
     }
 
     /**
-     * Circuit breaking strategy (0: average RT, 1: exception ratio, 2: exception count).
+     * 断路器策略：
+     * <ul>
+     *     <li>0: average RT</li>
+     *     <li>1: exception ratio</li>
+     *     <li>2: exception count</li>
+     * </ul>
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
-     * Threshold count. The exact meaning depends on the field of grade.
+     * 阈值总和。具体含义取决于{@link #grade}
      * <ul>
-     *     <li>In average RT mode, it means the maximum response time(RT) in milliseconds.</li>
-     *     <li>In exception ratio mode, it means exception ratio which between 0.0 and 1.0.</li>
-     *     <li>In exception count mode, it means exception count</li>
-     * <ul/>
+     *     <li>average RT: 意味着最大响应时间（毫秒）</li>
+     *     <li>exception ratio: 意味着[0, 1]之间的异常率</li>
+     *     <li>exception count: 意味着异常总和</li>
+     * </ul>
      */
     private double count;
 
     /**
-     * Recovery timeout (in seconds) when circuit breaker opens. After the timeout, the circuit breaker will
-     * transform to half-open state for trying a few requests.
+     * 当断路器打开时的恢复时间（秒）。当超时后，断路器将进入半开状态，允许尝试部分请求
      */
     private int timeWindow;
 
     /**
-     * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
+     * 可以打断断路器的最小请求数（在获取统计时间跨度内）
      *
      * @since 1.7.0
      */
     private int minRequestAmount = RuleConstant.DEGRADE_DEFAULT_MIN_REQUEST_AMOUNT;
 
     /**
-     * The threshold of slow request ratio in RT mode.
+     * average RT：慢请求率的阈值
      *
      * @since 1.8.0
      */
     private double slowRatioThreshold = 1.0d;
 
     /**
-     * The interval statistics duration in millisecond.
+     * 间隔统计持续时间（毫秒）
      *
      * @since 1.8.0
      */

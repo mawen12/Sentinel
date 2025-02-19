@@ -16,16 +16,24 @@
 package com.alibaba.csp.sentinel.cluster;
 
 /**
- * A simple descriptor for Sentinel token server.
+ * 用于Sentinel令牌服务器的简单描述符
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class TokenServerDescriptor {
 
+    /**
+     * 主机
+     */
     private final String host;
+    /**
+     * 端口
+     */
     private final int port;
-
+    /**
+     * 类型
+     */
     private String type = "default";
 
     public TokenServerDescriptor(String host, int port) {

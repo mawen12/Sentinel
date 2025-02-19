@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.ResourceTypeConstants;
 
 /**
- * Common string resource wrapper.
+ * 常见的字符串的资源包装器
  *
  * @author qinan.qn
  * @author jialiang.linjl
@@ -27,6 +27,7 @@ import com.alibaba.csp.sentinel.ResourceTypeConstants;
 public class StringResourceWrapper extends ResourceWrapper {
 
     public StringResourceWrapper(String name, EntryType e) {
+        // 默认为common
         super(name, e, ResourceTypeConstants.COMMON);
     }
 

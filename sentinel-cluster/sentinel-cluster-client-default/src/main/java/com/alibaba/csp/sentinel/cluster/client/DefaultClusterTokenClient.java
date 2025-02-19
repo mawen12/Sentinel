@@ -37,16 +37,25 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * Default implementation of {@link ClusterTokenClient}.
+ * 默认的{@link ClusterTokenClient}实现
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class DefaultClusterTokenClient implements ClusterTokenClient {
 
+    /**
+     * Sentinel分布式的同步传输客户端
+     */
     private ClusterTransportClient transportClient;
+    /**
+     * Sentinel令牌服务器的描述符
+     */
     private TokenServerDescriptor serverDescriptor;
 
+    /**
+     * 线程安全的启动状态标识
+     */
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
     public DefaultClusterTokenClient() {

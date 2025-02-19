@@ -16,24 +16,39 @@
 package com.alibaba.csp.sentinel.slots.statistic;
 
 /**
+ * 指标事件
+ *
  * @author Eric Zhao
  */
 public enum MetricEvent {
 
     /**
-     * Normal pass.
+     * 正常通过
      */
     PASS,
+
     /**
-     * Normal block.
+     * 正常阻塞
      */
     BLOCK,
+
+    /**
+     * 发生异常
+     */
     EXCEPTION,
+
+    /**
+     * 请求成功
+     */
     SUCCESS,
+
+    /**
+     * 响应事件
+     */
     RT,
 
     /**
-     * Passed in future quota (pre-occupied, since 1.5.0).
+     * 已通过未来配额（已预先占用，自1.5.0起）
      */
     OCCUPIED_PASS
 }

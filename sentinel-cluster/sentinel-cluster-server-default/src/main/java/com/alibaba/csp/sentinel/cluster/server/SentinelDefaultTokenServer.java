@@ -31,15 +31,31 @@ import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * 默认的{@link ClusterTokenServer}实现。
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class SentinelDefaultTokenServer implements ClusterTokenServer {
 
+    /**
+     * 是否内置标志
+     */
     private final boolean embedded;
 
+    /**
+     * 集群令牌服务器
+     */
     private ClusterTokenServer server;
+
+    /**
+     * 端口
+     */
     private int port;
+
+    /**
+     * 线程安全的是否启动标志
+     */
     private final AtomicBoolean shouldStart = new AtomicBoolean(false);
 
     static {

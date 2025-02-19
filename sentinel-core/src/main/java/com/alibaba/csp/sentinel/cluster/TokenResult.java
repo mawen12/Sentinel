@@ -18,20 +18,38 @@ package com.alibaba.csp.sentinel.cluster;
 import java.util.Map;
 
 /**
- * Result entity of acquiring cluster flow token.
+ * 申请集群流量令牌的结果实体
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class TokenResult {
 
+    /**
+     * 状态
+     *
+     * @see TokenResultStatus
+     */
     private Integer status;
 
+    /**
+     * 额外信息
+     */
     private int remaining;
+
+    /**
+     * 等待时间（毫秒）
+     */
     private int waitInMs;
 
+    /**
+     * 令牌Id
+     */
     private long tokenId;
 
+    /**
+     * 附件
+     */
     private Map<String, String> attachments;
 
     public TokenResult() {

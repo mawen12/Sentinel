@@ -24,7 +24,7 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.DebugSupport;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
- * Holds real-time statistics for resources.
+ * 保存资源的实时统计数据。
  *
  * @author qinan.qn
  * @author leyou
@@ -33,172 +33,142 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
 public interface Node extends OccupySupport, DebugSupport {
 
     /**
-     * Get incoming request per minute ({@code pass + block}).
-     *
-     * @return total request count per minute
+     * @return 每分钟传入的请求总数{@code pass + block}
      */
     long totalRequest();
 
     /**
-     * Get pass count per minute.
-     *
-     * @return total passed request count per minute
+     * @return 每分钟通过的请求总数
      * @since 1.5.0
      */
     long totalPass();
 
     /**
-     * Get {@link Entry#exit()} count per minute.
+     * 请求成功是指调用了{@link Entry#exit()}。
      *
-     * @return total completed request count per minute
+     * @return 每分钟请求成功的总数
      */
     long totalSuccess();
 
     /**
-     * Get blocked request count per minute (totalBlockRequest).
-     *
-     * @return total blocked request count per minute
+     * @return 每分钟阻塞的请求总数
      */
     long blockRequest();
 
     /**
-     * Get exception count per minute.
-     *
-     * @return total business exception count per minute
+     * @return 每分钟发生业务异常的总数
      */
     long totalException();
 
     /**
-     * Get pass request per second.
-     *
-     * @return QPS of passed requests
+     * @return 每秒允许通过请求的QPS
      */
     double passQps();
 
     /**
-     * Get block request per second.
-     *
-     * @return QPS of blocked requests
+     * @return 每秒阻塞请求的QPS
      */
     double blockQps();
 
     /**
-     * Get {@link #passQps()} + {@link #blockQps()} request per second.
-     *
-     * @return QPS of passed and blocked requests
+     * @return 每秒请求的QPS总和，{@code pass qps + block qps}
      */
     double totalQps();
 
     /**
-     * Get {@link Entry#exit()} request per second.
+     * 请求成功是指调用了{@link Entry#exit()}。
      *
-     * @return QPS of completed requests
+     * @return 每秒已完成请求的QPS
      */
     double successQps();
 
     /**
-     * Get estimated max success QPS till now.
-     *
-     * @return max completed QPS
+     * @return 获取迄今为止估计的最大成功请求的QPS
      */
     double maxSuccessQps();
 
     /**
-     * Get exception count per second.
-     *
-     * @return QPS of exception occurs
+     * @return 每秒发生异常的QPS
      */
     double exceptionQps();
 
     /**
-     * Get average rt per second.
-     *
-     * @return average response time per second
+     * @return 每秒平均相应时间（Response Time -> RT）
      */
     double avgRt();
 
     /**
-     * Get minimal response time.
-     *
-     * @return recorded minimal response time
+     * @return 获取迄今为止最小的响应时间（Response Time -> RT）
      */
     double minRt();
 
     /**
-     * Get current active thread count.
-     *
-     * @return current active thread count
+     * @return 当前活跃的线程数量
      */
     int curThreadNum();
 
     /**
-     * Get last second block QPS.
+     * 返回上一秒阻塞请求的QPS
      */
     double previousBlockQps();
 
     /**
-     * Last window QPS.
+     * 返回上一秒通用请求的QPS
      */
     double previousPassQps();
 
     /**
-     * Fetch all valid metric nodes of resources.
-     *
-     * @return valid metric nodes of resources
+     * @return 返回资源合法的指标 {@link Node}
      */
     Map<Long, MetricNode> metrics();
 
     /**
-     * Fetch all raw metric items that satisfies the time predicate.
-     *
      * @param timePredicate time predicate
-     * @return raw metric items that satisfies the time predicate
+     * @return 返回所有满足时间条件的原始指标项
      * @since 1.7.0
      */
     List<MetricNode> rawMetricsInMin(Predicate<Long> timePredicate);
 
     /**
-     * Add pass count.
-     *
-     * @param count count to add pass
+     * @param count 添加通过计数
      */
     void addPassRequest(int count);
 
     /**
-     * Add rt and success count.
+     * 添加响应时间和成功数
      *
-     * @param rt      response time
-     * @param success success count to add
+     * @param rt      响应时间
+     * @param success 要添加的成功总数
      */
     void addRtAndSuccess(long rt, int success);
 
     /**
-     * Increase the block count.
+     * 增加阻塞总数
      *
-     * @param count count to add
+     * @param count 要添加的总数
      */
     void increaseBlockQps(int count);
 
     /**
-     * Add the biz exception count.
+     * 增加业务异常总数
      *
-     * @param count count to add
+     * @param count 要添加的总数
      */
     void increaseExceptionQps(int count);
 
     /**
-     * Increase current thread count.
+     * 增加当前线程数量
      */
     void increaseThreadNum();
 
     /**
-     * Decrease current thread count.
+     * 减少当前线程数量
      */
     void decreaseThreadNum();
 
     /**
-     * Reset the internal counter. Reset is needed when {@link IntervalProperty#INTERVAL} or
-     * {@link SampleCountProperty#SAMPLE_COUNT} is changed.
+     * 重置内部计数器，当{@link IntervalProperty#INTERVAL}或者
+     * {@link SampleCountProperty#SAMPLE_COUNT}发生变化时才会重置。
      */
     void reset();
 }

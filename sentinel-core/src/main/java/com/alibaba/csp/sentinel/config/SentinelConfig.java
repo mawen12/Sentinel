@@ -25,8 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The universal local configuration center of Sentinel. The config is retrieved from command line arguments
- * and customized properties file by default.
+ * Sentinel的统一本地配置中心。默认从命令行参数和自定义属性文件获取。
  *
  * @author leyou
  * @author Eric Zhao
@@ -35,17 +34,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class SentinelConfig {
 
     /**
-     * The default application type.
+     * 默认应用类型
      *
      * @since 1.6.0
      */
     public static final int APP_TYPE_COMMON = 0;
 
     /**
-     * Parameter value for using context classloader.
+     * 使用上下文类加载器的参数值
      */
     private static final String CLASSLOADER_CONTEXT = "context";
 
+    /**
+     * 线程安全的属性与值存储
+     */
     private static final Map<String, String> props = new ConcurrentHashMap<>();
 
     private static int appType = APP_TYPE_COMMON;
@@ -239,21 +241,23 @@ public final class SentinelConfig {
     }
 
     /**
-     * <p>Get the max RT value that Sentinel could accept for system BBR strategy.</p>
+     * 解析属性csp.sentinel.statistic.max.rt的值。
+     * 如果未通过，则使用默认值5000，并将其写入到属性中。
      *
-     * @return the max allowed RT value
+     * @return 返回Sentinel可以为系统BBR策略接受的最大RT值
      * @since 1.4.1
      */
     public static int statisticMaxRt() {
+        //获取属性csp.sentinel.statistic.max.rt的值
         String v = props.get(STATISTIC_MAX_RT);
         try {
             if (StringUtil.isEmpty(v)) {
+                // 如果为空，返回5000
                 return DEFAULT_STATISTIC_MAX_RT;
             }
             return Integer.parseInt(v);
         } catch (Throwable throwable) {
-            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {}, using the default value instead: "
-                    + DEFAULT_STATISTIC_MAX_RT, v, throwable);
+            RecordLog.warn("[SentinelConfig] Invalid statisticMaxRt value: {}, using the default value instead: " + DEFAULT_STATISTIC_MAX_RT, v, throwable);
             SentinelConfig.setConfig(STATISTIC_MAX_RT, String.valueOf(DEFAULT_STATISTIC_MAX_RT));
             return DEFAULT_STATISTIC_MAX_RT;
         }

@@ -20,23 +20,33 @@ import com.alibaba.csp.sentinel.slots.statistic.MetricEvent;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Represents metrics data in a period of time span.
+ * 表示一段时间内的指标数据
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class MetricBucket {
 
+    /**
+     * 使用{@link LongAdder}数组存储一段时间内的指标
+     */
     private final LongAdder[] counters;
 
+    /**
+     * 最小的响应时间，该值默认被初始化为{@link SentinelConfig#statisticMaxRt()}，即5000。
+     */
     private volatile long minRt;
 
     public MetricBucket() {
+        // 获取所有的指标事件
         MetricEvent[] events = MetricEvent.values();
+        // 构造对应指标事件数量的计数器数组
         this.counters = new LongAdder[events.length];
+        // 对数组进行初始化
         for (MetricEvent event : events) {
             counters[event.ordinal()] = new LongAdder();
         }
+        // 初始化最小的响应时间
         initMinRt();
     }
 

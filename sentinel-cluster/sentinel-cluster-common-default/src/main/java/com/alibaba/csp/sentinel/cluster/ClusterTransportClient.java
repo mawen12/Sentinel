@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.cluster.request.ClusterRequest;
 import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 
 /**
- * Synchronous transport client for distributed flow control.
+ * 用于分布式流控的同步传输客户端
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -27,30 +27,30 @@ import com.alibaba.csp.sentinel.cluster.response.ClusterResponse;
 public interface ClusterTransportClient {
 
     /**
-     * Start the client.
+     * 开始客户端
      *
      * @throws Exception some error occurred (e.g. initialization failed)
      */
     void start() throws Exception;
 
     /**
-     * Stop the client.
+     * 停止客户端
      *
      * @throws Exception some error occurred (e.g. shutdown failed)
      */
     void stop() throws Exception;
 
     /**
-     * Send request to remote server and get response.
+     * 发送请求到远程服务器并接受响应
      *
-     * @param request Sentinel cluster request
+     * @param request Sentinel集群请求
      * @return response from remote server
      * @throws Exception some error occurs
      */
     ClusterResponse sendRequest(ClusterRequest request) throws Exception;
 
     /**
-     * Check whether the client has been started and ready for sending requests.
+     * 检查客户端是否已启动并准备好发送请求
      *
      * @return true if the client is ready to send requests, otherwise false
      */

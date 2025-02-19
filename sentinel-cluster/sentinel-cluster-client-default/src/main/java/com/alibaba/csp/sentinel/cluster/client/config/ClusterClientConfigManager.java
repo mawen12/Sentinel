@@ -49,6 +49,9 @@ public final class ClusterClientConfigManager {
     private static SentinelProperty<ClusterClientConfig> clientConfigProperty = new DynamicSentinelProperty<>();
     private static SentinelProperty<ClusterClientAssignConfig> clientAssignProperty = new DynamicSentinelProperty<>();
 
+    /**
+     * 观察者模式
+     */
     private static final List<ServerChangeObserver> SERVER_CHANGE_OBSERVERS = new ArrayList<>();
 
     static {

@@ -24,14 +24,10 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
- * <p>
- * Basic data structure for statistic metrics in Sentinel.
- * </p>
- * <p>
- * Leap array use sliding window algorithm to count data. Each bucket cover {@code windowLengthInMs} time span,
- * and the total time span is {@link #intervalInMs}, so the total bucket amount is:
- * {@code sampleCount = intervalInMs / windowLengthInMs}.
- * </p>
+ * Sentinel中由于统计信息指标的基础数据结构。
+ *
+ * <p>Leap 数组使用滑动窗口算法来统计数据。每个bucket涵盖{@link #windowLengthInMs}时间跨度，并且总的时间跨度为{@link #intervalInMs}。
+ * 因此总的bucket容量为{@code sampleCount = intervalMs / windowLengthInMs}。
  *
  * @param <T> type of statistic data
  * @author jialiang.linjl
@@ -40,15 +36,27 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public abstract class LeapArray<T> {
 
+    /**
+     * 滑动窗口的长度，单位为毫秒
+     */
     protected int windowLengthInMs;
+    /**
+     * 采样数，即总的bucket容量
+     */
     protected int sampleCount;
+    /**
+     * 总的时间跨度，单位为毫秒
+     */
     protected int intervalInMs;
+    /**
+     * 总的时间跨度，单位为秒
+     */
     private double intervalInSecond;
 
     protected final AtomicReferenceArray<WindowWrap<T>> array;
 
     /**
-     * The conditional (predicate) update lock is used only when current bucket is deprecated.
+     * 仅在当前bucket过期时才会被使用的条件更新锁
      */
     private final ReentrantLock updateLock = new ReentrantLock();
 
@@ -63,8 +71,10 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
+        // 毫秒内的窗口长度 = 毫秒间隔 / 取样数
         this.windowLengthInMs = intervalInMs / sampleCount;
         this.intervalInMs = intervalInMs;
+        // 转换为秒间隔
         this.intervalInSecond = intervalInMs / 1000.0;
         this.sampleCount = sampleCount;
 

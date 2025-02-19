@@ -21,6 +21,15 @@ package com.alibaba.csp.sentinel;
  */
 public final class ResourceTypeConstants {
 
+    /**
+     * 通用类型
+     *
+     * <p>默认被以下类型使用
+     * <ul>
+     *     <li>{@link com.alibaba.csp.sentinel.slotchain.StringResourceWrapper}</li>
+     *     <li>{@link com.alibaba.csp.sentinel.slotchain.MethodResourceWrapper}</li>
+     * </ul>
+     */
     public static final int COMMON = 0;
     public static final int COMMON_WEB = 1;
     public static final int COMMON_RPC = 2;

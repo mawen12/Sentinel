@@ -31,7 +31,9 @@ public final class MethodUtil {
     private static final Object LOCK = new Object();
 
     /**
-     * Parse and resolve the method name, then cache to the map.
+     * 解析并解决方法名称，然后缓存到{@link #methodNameMap}。
+     *
+     * <p>方法名称的格式：<className>:<methodName>(<argName1>, <argName2>,...,<argNamen>)
      *
      * @param method method instance
      * @return resolved method name

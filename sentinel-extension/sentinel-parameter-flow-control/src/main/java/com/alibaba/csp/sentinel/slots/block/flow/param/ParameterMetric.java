@@ -28,32 +28,31 @@ import com.alibaba.csp.sentinel.slots.statistic.cache.CacheMap;
 import com.alibaba.csp.sentinel.slots.statistic.cache.ConcurrentLinkedHashMapWrapper;
 
 /**
- * Metrics for frequent ("hot spot") parameters.
+ * 频繁（热点）参数的度量
  *
  * @author Eric Zhao
  * @since 0.2.0
  */
 public class ParameterMetric {
 
+    /**
+     * 线程总数最大容量
+     */
     private static final int THREAD_COUNT_MAX_CAPACITY = 4000;
+    /**
+     * 基础参数的最大容量
+     */
     private static final int BASE_PARAM_MAX_CAPACITY = 4000;
+    /**
+     * 累计最大容量
+     */
     private static final int TOTAL_MAX_CAPACITY = 20_0000;
 
     private final Object lock = new Object();
 
-    /**
-     * Format: (rule, (value, timeRecorder))
-     *
-     * @since 1.6.0
-     */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicLong>> ruleTimeCounters = new HashMap<>();
+    private final Map<ParamFlowRule/* 规则 */, CacheMap<Object/* 值 */, AtomicLong/* 时间记录器 */>> ruleTimeCounters = new HashMap<>();
 
-    /**
-     * Format: (rule, (value, tokenCounter))
-     *
-     * @since 1.6.0
-     */
-    private final Map<ParamFlowRule, CacheMap<Object, AtomicReference<TokenUpdateStatus>>> ruleTokenCounter = new HashMap<>();
+    private final Map<ParamFlowRule/* 规则 */, CacheMap<Object/* 值 */, AtomicReference<TokenUpdateStatus>/* Token累计器 */>> ruleTokenCounter = new HashMap<>();
 
     private final Map<Integer, CacheMap<Object, AtomicInteger>> threadCountMap = new HashMap<>();
 

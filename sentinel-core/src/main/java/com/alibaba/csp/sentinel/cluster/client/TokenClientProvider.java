@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.spi.SpiLoader;
 
 /**
- * Provider for a universal {@link ClusterTokenClient} instance.
+ * 通用{@link ClusterTokenClient}实例的提供程序
  *
  * @author Eric Zhao
  * @since 1.4.0

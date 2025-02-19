@@ -45,12 +45,15 @@ public class CtSph implements Sph {
     private static final Object[] OBJECTS0 = new Object[0];
 
     /**
-     * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
-     * {@link ProcessorSlotChain}, no matter in which {@link Context}.
+     * 相同的资源即{@link ResourceWrapper#equals(Object)}，
+     * 将共享同一个{@link ProcessorSlotChain}，
+     * 无论其存在于哪个{@link Context}。
      */
-    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap
-        = new HashMap<ResourceWrapper, ProcessorSlotChain>();
+    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap = new HashMap<ResourceWrapper, ProcessorSlotChain>();
 
+    /**
+     * 全局的类锁
+     */
     private static final Object LOCK = new Object();
 
     private AsyncEntry asyncEntryWithNoChain(ResourceWrapper resourceWrapper, Context context) {
@@ -116,15 +119,18 @@ public class CtSph implements Sph {
 
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
+        // 获取上下文
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
-            // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
-            // so here init the entry only. No rule checking will be done.
+            /**
+             * 当出现{@link NullContext}时，代表了上下文的数量已经超过了阈值。
+             * 因此此处仅进入entry，无需执行任何规则检查。
+             */
             return new CtEntry(resourceWrapper, null, context);
         }
 
         if (context == null) {
-            // Using default context.
+            // 当线程中上不存在上下文时，将使用默认的上下文。
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
 
@@ -157,20 +163,19 @@ public class CtSph implements Sph {
     }
 
     /**
-     * Do all {@link Rule}s checking about the resource.
+     * 执行有关资源的所有的{@link Rule}检查
      *
-     * <p>Each distinct resource will use a {@link ProcessorSlot} to do rules checking. Same resource will use
-     * same {@link ProcessorSlot} globally. </p>
+     * <p>每一个不同的资源将会使用{@link ProcessorSlot}来执行规则检查。
+     * 相同的资源将全局使用相同的{@link ProcessorSlot}。
      *
-     * <p>Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},
-     * otherwise no rules checking will do. In this condition, all requests will pass directly, with no checking
-     * or exception.</p>
+     * <p>需要注意，总的{@link ProcessorSlot}数量不能超过{@link Constants#MAX_SLOT_CHAIN_SIZE}的限制。
+     * 否则将不会应用任何规则检查。在这种情况下，所有的请求将直接通过，无需检查或抛出异常。
      *
-     * @param resourceWrapper resource name
-     * @param count           tokens needed
-     * @param args            arguments of user method call
+     * @param resourceWrapper 资源包装器
+     * @param count           需要的token数量
+     * @param args            用户方法调用的参数
      * @return {@link Entry} represents this call
-     * @throws BlockException if any rule's threshold is exceeded
+     * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      */
     public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
         return entryWithPriority(resourceWrapper, count, false, args);
@@ -243,7 +248,7 @@ public class CtSph implements Sph {
     }
 
     /**
-     * This class is used for skip context name checking.
+     * 用于跳过上下文名称检查的类
      */
     private final static class InternalContextUtil extends ContextUtil {
         static Context internalEnter(String name) {
@@ -257,6 +262,7 @@ public class CtSph implements Sph {
 
     @Override
     public Entry entry(String name) throws BlockException {
+        // 构造流出方向，基于String类型的资源包装器
         StringResourceWrapper resource = new StringResourceWrapper(name, EntryType.OUT);
         return entry(resource, 1, OBJECTS0);
     }

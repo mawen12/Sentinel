@@ -16,15 +16,17 @@
 package com.alibaba.csp.sentinel.cluster.client.config;
 
 /**
+ * 服务变更观察者
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public interface ServerChangeObserver {
 
     /**
-     * Callback on remote server address change.
+     * 当远程服务器地址发生变更时回调
      *
-     * @param assignConfig new cluster assignment config
+     * @param assignConfig 新的集群分配配置
      */
     void onRemoteServerChange(ClusterClientAssignConfig assignConfig);
 }

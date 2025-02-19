@@ -16,12 +16,20 @@
 package com.alibaba.csp.sentinel.cluster.client.config;
 
 /**
+ * 集群客户端分配配置
+ *
  * @author Eric Zhao
  * @since 1.4.1
  */
 public class ClusterClientAssignConfig {
 
+    /**
+     * 服务器主机
+     */
     private String serverHost;
+    /**
+     * 服务器端口
+     */
     private Integer serverPort;
 
     public ClusterClientAssignConfig() {}

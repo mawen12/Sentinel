@@ -30,6 +30,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
  * Netty client handler for Sentinel token client.
+ * 用于Sentinel令牌客户端的Netty客户端处理器
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -46,7 +47,9 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 当信道连接时，设置状态为已启动
         currentState.set(ClientConstants.CLIENT_STATUS_STARTED);
+        // 触发客户端Ping
         fireClientPing(ctx);
         RecordLog.info("[TokenClientHandler] Client handler active, remote address: {}", getRemoteAddress(ctx));
     }
@@ -65,6 +68,11 @@ public class TokenClientHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * 触发客户端Ping
+     *
+     * @param ctx
+     */
     private void fireClientPing(ChannelHandlerContext ctx) {
         // Data body: namespace of the client.
         ClusterRequest<String> ping = new ClusterRequest<String>().setId(0)

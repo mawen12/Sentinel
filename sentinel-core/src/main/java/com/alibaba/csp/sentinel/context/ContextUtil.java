@@ -31,12 +31,10 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 
 /**
- * Utility class to get or create {@link Context} in current thread.
+ * 在当前线程中获取或创建{@link Context}的单元类。
  *
- * <p>
- * Each {@link SphU}#entry() or {@link SphO}#entry() should be in a {@link Context}.
- * If we don't invoke {@link ContextUtil}#enter() explicitly, DEFAULT context will be used.
- * </p>
+ * <p>每个{@link SphU#entry(String)}或{@link SphO#entry(String)}应该在一个{@link Context}中。
+ * 如果我们没有明确调用{@link ContextUtil#enter(String)}，将使用默认的{@link Context}。
  *
  * @author jialiang.linjl
  * @author leyou(lihao)
@@ -45,15 +43,18 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 public class ContextUtil {
 
     /**
-     * Store the context in ThreadLocal for easy access.
+     * 将上下文保存到线程本地，用于便利访问
      */
     private static ThreadLocal<Context> contextHolder = new ThreadLocal<>();
 
     /**
-     * Holds all {@link EntranceNode}. Each {@link EntranceNode} is associated with a distinct context name.
+     * 保存所有的{@link EntranceNode}，每一个{@link EntranceNode}都关联着一个不同的上下文名称。
      */
     private static volatile Map<String, DefaultNode> contextNameNodeMap = new HashMap<>();
 
+    /**
+     * 可重入锁
+     */
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final Context NULL_CONTEXT = new NullContext();
 
@@ -119,24 +120,31 @@ public class ContextUtil {
 
     protected static Context trueEnter(String name, String origin) {
         Context context = contextHolder.get();
-        if (context == null) {
+        if (context == null) {// 上下文不存在时，按需创建
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
+            // 获取资源名称的节点
             DefaultNode node = localCacheNameMap.get(name);
-            if (node == null) {
+            if (node == null) {// 节点不存在时，检查是否超过阈值
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                    // 超过2000个上下文的阈值时，将使用NullContext
                     setNullContext();
                     return NULL_CONTEXT;
                 } else {
+                    // 加上全局锁
                     LOCK.lock();
                     try {
+                        // 获取该名称对于的节点
                         node = contextNameNodeMap.get(name);
-                        if (node == null) {
+                        if (node == null) {// 节点不存在时，需按条件创建
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                                // 超过2000个上下文的阈值时，将使用NullContext
                                 setNullContext();
                                 return NULL_CONTEXT;
                             } else {
+                                // 创建入口节点，基于资源输入的调用
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
                                 // Add entrance node.
+                                //
                                 Constants.ROOT.addChild(node);
 
                                 Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
@@ -164,8 +172,7 @@ public class ContextUtil {
         contextHolder.set(NULL_CONTEXT);
         // Don't need to be thread-safe.
         if (shouldWarn) {
-            RecordLog.warn("[SentinelStatusChecker] WARN: Amount of context exceeds the threshold "
-                + Constants.MAX_CONTEXT_NAME_SIZE + ". Entries in new contexts will NOT take effect!");
+            RecordLog.warn("[SentinelStatusChecker] WARN: Amount of context exceeds the threshold " + Constants.MAX_CONTEXT_NAME_SIZE + ". Entries in new contexts will NOT take effect!");
             shouldWarn = false;
         }
     }
@@ -229,10 +236,7 @@ public class ContextUtil {
     }
 
     /**
-     * Get {@link Context} of current thread.
-     *
-     * @return context of current thread. Null value will be return if current
-     * thread does't have context.
+     * @return 获取当前线程关联的{@link Context}。如果当前线程不存在上下文，则返回null。
      */
     public static Context getContext() {
         return contextHolder.get();

@@ -26,14 +26,12 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 
 /**
- * <p>
- * A {@link Node} used to hold statistics for specific resource name in the specific context.
- * Each distinct resource in each distinct {@link Context} will corresponding to a {@link DefaultNode}.
- * </p>
- * <p>
- * This class may have a list of sub {@link DefaultNode}s. Child nodes will be created when
- * calling {@link SphU}#entry() or {@link SphO}@entry() multiple times in the same {@link Context}.
- * </p>
+ * 用于在特定上下文中保存特定资源名称的统计信息的{@link Node}实现。
+ *
+ * <p>在不同的{@link Context}中的每个不同的资源都关联一个{@link DefaultNode}。
+ *
+ * <p>该类有一系列子{@link DefaultNode}，当在同一个{@link Context}中
+ * 调用{@link SphU#entry()}或{@link SphO#entry()}多次时将创建子节点。
  *
  * @author qinan.qn
  * @see NodeSelectorSlot
@@ -41,17 +39,17 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
 public class DefaultNode extends StatisticNode {
 
     /**
-     * The resource associated with the node.
+     * 资源包装器
      */
     private ResourceWrapper id;
 
     /**
-     * The list of all child nodes.
+     * 保存了所有节点的列表
      */
     private volatile Set<Node> childList = new HashSet<>();
 
     /**
-     * Associated cluster node.
+     * 关联集群节点
      */
     private ClusterNode clusterNode;
 
@@ -73,18 +71,21 @@ public class DefaultNode extends StatisticNode {
     }
 
     /**
-     * Add child node to current node.
+     * 向当前节点添加子节点
      *
-     * @param node valid child node
+     * @param node 合法的子级节点
      */
     public void addChild(Node node) {
-        if (node == null) {
+        if (node == null) {// 对于不合法的子级节点，直接返回
             RecordLog.warn("Trying to add null child to node <{}>, ignored", id.getName());
             return;
         }
-        if (!childList.contains(node)) {
-            synchronized (this) {
-                if (!childList.contains(node)) {
+
+        // 双检
+        if (!childList.contains(node)) {// 对于尚不存在的节点，进行加入
+            synchronized (this) { // 同步
+                if (!childList.contains(node)) {// 对于尚不存在的节点，进行加入
+                    // 扩展原有列表
                     Set<Node> newSet = new HashSet<>(childList.size() + 1);
                     newSet.addAll(childList);
                     newSet.add(node);
@@ -96,7 +97,7 @@ public class DefaultNode extends StatisticNode {
     }
 
     /**
-     * Reset the child node list.
+     * 重置子节点列表
      */
     public void removeChildList() {
         this.childList = new HashSet<>();

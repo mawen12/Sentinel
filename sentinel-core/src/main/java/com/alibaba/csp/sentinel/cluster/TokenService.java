@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.cluster;
 import java.util.Collection;
 
 /**
- * Service interface of flow control.
+ * 流控服务接口
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -26,38 +26,38 @@ import java.util.Collection;
 public interface TokenService {
 
     /**
-     * Request tokens from remote token server.
+     * 从远程令牌服务器请求令牌
      *
-     * @param ruleId the unique rule ID
-     * @param acquireCount token count to acquire
-     * @param prioritized whether the request is prioritized
-     * @return result of the token request
+     * @param ruleId 唯一规则ID
+     * @param acquireCount 申请的令牌总数
+     * @param prioritized 该请求是否优先
+     * @return 令牌请求的结果
      */
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 
     /**
-     * Request tokens for a specific parameter from remote token server.
+     * 从远程令牌服务器为特定参数请求令牌
      *
-     * @param ruleId the unique rule ID
-     * @param acquireCount token count to acquire
-     * @param params parameter list
-     * @return result of the token request
+     * @param ruleId 唯一规则ID
+     * @param acquireCount 申请的令牌总数
+     * @param params 参数列表
+     * @return 令牌请求的结果
      */
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
 
     /**
-     * Request acquire concurrent tokens from remote token server.
+     * 从远程令牌服务器申请并发令牌
      *
-     * @param clientAddress the address of the request belong.
-     * @param ruleId ruleId the unique rule ID
-     * @param acquireCount token count to acquire
-     * @return result of the token request
+     * @param clientAddress 请求所属的地址
+     * @param ruleId 唯一规则ID
+     * @param acquireCount 申请的令牌总数
+     * @return 令牌请求的结果
      */
     TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
     /**
-     * Request release concurrent tokens from remote token server asynchronously.
+     * 从远程令牌服务器异步释放并发令牌
      *
-     * @param tokenId the unique token ID
+     * @param tokenId 唯一令牌ID
      */
     void releaseConcurrentToken(Long tokenId);
 }

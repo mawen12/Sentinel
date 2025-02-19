@@ -23,12 +23,15 @@ import com.alibaba.csp.sentinel.util.IdUtil;
 import com.alibaba.csp.sentinel.util.MethodUtil;
 
 /**
- * Resource wrapper for method invocation.
+ * 用于方法调用的资源包装器
  *
  * @author qinan.qn
  */
 public class MethodResourceWrapper extends ResourceWrapper {
 
+    /**
+     * 方法对象
+     */
     private final transient Method method;
 
     public MethodResourceWrapper(Method method, EntryType e) {

@@ -27,23 +27,18 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
 /**
- * <p>The statistic node keep three kinds of real-time statistics metrics:</p>
+ * 统计节点保存三种类型的实时统计指标：
  * <ol>
- * <li>metrics in second level ({@code rollingCounterInSecond})</li>
- * <li>metrics in minute level ({@code rollingCounterInMinute})</li>
- * <li>thread count</li>
+ *     <li>秒级指标 {@link #rollingCounterInSecond}</li>
+ *     <li>分钟级指标 {@link #rollingCounterInMinute}</li>
+ *     <li>线程总数</li>
  * </ol>
  *
- * <p>
- * Sentinel use sliding window to record and count the resource statistics in real-time.
- * The sliding window infrastructure behind the {@link ArrayMetric} is {@code LeapArray}.
- * </p>
+ * <p>Sentinel使用滑动窗口来实时记录和统计资源的统计信息。
  *
- * <p>
- * case 1: When the first request comes in, Sentinel will create a new window bucket of
- * a specified time-span to store running statics, such as total response time(rt),
- * incoming request(QPS), block request(bq), etc. And the time-span is defined by sample count.
- * </p>
+ * <p>场景1：当第一个请求到来时，Sentinel将创建一个特定的时间跨度的窗口桶
+ * 来存储运行静态数据，例如总响应时间（RT），到来的请求（QPS），阻塞请求（bq）等。
+ * 同时时间跨度由样本数定义。
  * <pre>
  * 	0      100ms
  *  +-------+--→ Sliding Windows
@@ -51,13 +46,10 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  * 	    |
  * 	  request
  * </pre>
- * <p>
- * Sentinel use the statics of the valid buckets to decide whether this request can be passed.
- * For example, if a rule defines that only 100 requests can be passed,
- * it will sum all qps in valid buckets, and compare it to the threshold defined in rule.
- * </p>
+ * <p>Sentinel使用合法通的静态数据来决定请求是否应该通过。例如：如果一个规则定义了仅能有100个请求通过，
+ * 它将对有效存储桶中的所有QPS进行求和，并将其与规则中定义的阈值相比较。
  *
- * <p>case 2: continuous requests</p>
+ * <p>场景2：持续请求
  * <pre>
  *  0    100ms    200ms    300ms
  *  +-------+-------+-------+-----→ Sliding Windows
@@ -66,7 +58,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *                   request
  * </pre>
  *
- * <p>case 3: requests keeps coming, and previous buckets become invalid</p>
+ * <p>场景3: 请求持续到来，之前的桶将变得非法</p>
  * <pre>
  *  0    100ms    200ms	  800ms	   900ms  1000ms    1300ms
  *  +-------+-------+ ...... +-------+-------+ ...... +-------+-----→ Sliding Windows
@@ -75,7 +67,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  *                                                    request
  * </pre>
  *
- * <p>The sliding window should become:</p>
+ * <p>此时滑动窗口应该为：</p>
  * <pre>
  * 300ms     800ms  900ms  1000ms  1300ms
  *  + ...... +-------+ ...... +-------+-----→ Sliding Windows
@@ -90,25 +82,24 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
 public class StatisticNode implements Node {
 
     /**
-     * Holds statistics of the recent {@code INTERVAL} milliseconds. The {@code INTERVAL} is divided into time spans
-     * by given {@code sampleCount}.
+     * 持有最近{@link IntervalProperty#INTERVAL}毫秒的统计信息。通过提供的{@link SampleCountProperty#SAMPLE_COUNT}
+     * 将{@link IntervalProperty#INTERVAL}划分为时间跨度。
      */
-    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
-        IntervalProperty.INTERVAL);
+    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT, IntervalProperty.INTERVAL);
 
     /**
-     * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
-     * meaning each bucket per second, in this way we can get accurate statistics of each second.
+     * 持有最近60s的统计信息。其中 windowLengthInMs 被特意设置为1000ms，
+     * 意思是每秒一个bucket，这样我们就可以得到每秒的精确统计数据。
      */
     private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
 
     /**
-     * The counter for thread count.
+     * 统计线程总数
      */
     private LongAdder curThreadNum = new LongAdder();
 
     /**
-     * The last timestamp when metrics were fetched.
+     * 上次获取指标的时间戳
      */
     private long lastFetchTime = -1;
 

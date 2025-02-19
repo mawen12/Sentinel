@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * A wrapper of resource name and type.
+ * 资源名称和资源类型的包装器
  *
  * @author qinan.qn
  * @author jialiang.linjl
@@ -27,9 +27,21 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public abstract class ResourceWrapper {
 
+    /**
+     * 资源名称
+     */
     protected final String name;
 
+    /**
+     * 资源调用方向
+     */
     protected final EntryType entryType;
+
+    /**
+     * 资源类型
+     *
+     * @see com.alibaba.csp.sentinel.ResourceTypeConstants
+     */
     protected final int resourceType;
 
     public ResourceWrapper(String name, EntryType entryType, int resourceType) {
@@ -41,27 +53,21 @@ public abstract class ResourceWrapper {
     }
 
     /**
-     * Get the resource name.
-     *
-     * @return the resource name
+     * @return 返回资源名称
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Get {@link EntryType} of this wrapper.
-     *
-     * @return {@link EntryType} of this wrapper.
+     * @return 返回资源调用方向
      */
     public EntryType getEntryType() {
         return entryType;
     }
 
     /**
-     * Get the classification of this resource.
-     *
-     * @return the classification of this resource
+     * @return 返回资源的分类
      * @since 1.7.0
      */
     public int getResourceType() {
@@ -69,9 +75,7 @@ public abstract class ResourceWrapper {
     }
 
     /**
-     * Get the beautified resource name to be showed.
-     *
-     * @return the beautified resource name
+     * @return 美化后的资源名称
      */
     public abstract String getShowName();
 

@@ -30,6 +30,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 
 /**
+ * 基于QPS的流量控制
+ *
  * @author jialiang.linjl
  */
 public class FlowQpsDemo {
@@ -47,8 +49,10 @@ public class FlowQpsDemo {
     private static int seconds = 60 + 40;
 
     public static void main(String[] args) throws Exception {
+        // 初始化流量控制规则
         initFlowQpsRule();
 
+        //
         tick();
         // first make the system run on a very low condition
         simulateTraffic();
@@ -59,12 +63,16 @@ public class FlowQpsDemo {
     }
 
     private static void initFlowQpsRule() {
+        // 构造流量规则
         List<FlowRule> rules = new ArrayList<FlowRule>();
         FlowRule rule1 = new FlowRule();
+        // 保护的资源为abc
         rule1.setResource(KEY);
-        // set limit qps to 20
+        // 限制qps为20
         rule1.setCount(20);
+        // 基于QPS的流控
         rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
+        //
         rule1.setLimitApp("default");
         rules.add(rule1);
         FlowRuleManager.loadRules(rules);
