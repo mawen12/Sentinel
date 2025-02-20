@@ -31,7 +31,7 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  * <p>在不同的{@link Context}中的每个不同的资源都关联一个{@link DefaultNode}。
  *
  * <p>该类有一系列子{@link DefaultNode}，当在同一个{@link Context}中
- * 调用{@link SphU#entry()}或{@link SphO#entry()}多次时将创建子节点。
+ * 调用{@link SphU}#entry()或{@link SphO}#entry()多次时将创建子节点。
  *
  * @author qinan.qn
  * @see NodeSelectorSlot

@@ -18,12 +18,16 @@ package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 
 /**
+ * 断路器状态变更观察者
+ *
  * @author Eric Zhao
  * @since 1.8.0
  */
 public interface CircuitBreakerStateChangeObserver {
 
     /**
+     * 当断路器状态发生变更时，观察者方法会被触发。
+     *
      * <p>Observer method triggered when circuit breaker state changed. The transformation could be:</p>
      * <ul>
      * <li>From {@code CLOSED} to {@code OPEN} (with the triggered metric)</li>

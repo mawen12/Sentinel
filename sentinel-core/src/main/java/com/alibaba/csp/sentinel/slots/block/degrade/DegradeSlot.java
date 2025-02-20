@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreake
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
- * A {@link ProcessorSlot} dedicates to circuit breaking.
+ * 专门用于断路器的{@link ProcessorSlot}。
  *
  * @author Carpenter Lee
  * @author Eric Zhao
@@ -40,17 +40,22 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
+        // 执行断路器检查
         performChecking(context, resourceWrapper);
 
+        // 完成entry
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     void performChecking(Context context, ResourceWrapper r) throws BlockException {
+        // 获取该资源名称配置的断路器
         List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+        // 断路器为空或不存在，跳过
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             return;
         }
         for (CircuitBreaker cb : circuitBreakers) {
+            // 使用断路器依次检查，检查失败抛出降级异常
             if (!cb.tryPass(context)) {
                 throw new DegradeException(cb.getRule().getLimitApp(), cb.getRule());
             }
@@ -59,24 +64,31 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper r, int count, Object... args) {
+        // 获取当前entry
         Entry curEntry = context.getCurEntry();
+        // 当出现阻塞异常时
         if (curEntry.getBlockError() != null) {
+            // 退出完成
             fireExit(context, r, count, args);
             return;
         }
+
+        // 获取该资源的断路器列表
         List<CircuitBreaker> circuitBreakers = DegradeRuleManager.getCircuitBreakers(r.getName());
+        // 如果断路器为空，则直接退出
         if (circuitBreakers == null || circuitBreakers.isEmpty()) {
             fireExit(context, r, count, args);
             return;
         }
 
+        // 对于没有异常的情况，调用断路器的请求完成，进行统计信息
         if (curEntry.getBlockError() == null) {
-            // passed request
             for (CircuitBreaker circuitBreaker : circuitBreakers) {
                 circuitBreaker.onRequestComplete(context);
             }
         }
 
+        // 退出完成
         fireExit(context, r, count, args);
     }
 }

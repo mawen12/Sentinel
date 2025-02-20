@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
- * Rule checker for white/black list authority.
+ * 用于黑白名单列表权限的规则检查器
  *
  * @author Eric Zhao
  * @since 0.2.0
@@ -28,14 +28,15 @@ import com.alibaba.csp.sentinel.util.StringUtil;
 final class AuthorityRuleChecker {
 
     static boolean passCheck(AuthorityRule rule, Context context) {
+        // 获取原始的请求
         String requester = context.getOrigin();
 
-        // Empty origin or empty limitApp will pass.
+        // 原始为空或者空的限制app允许通过
         if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
             return true;
         }
 
-        // Do exact match with origin name.
+        // 检查是否与原始名称匹配
         int pos = rule.getLimitApp().indexOf(requester);
         boolean contain = pos > -1;
 
@@ -43,6 +44,7 @@ final class AuthorityRuleChecker {
             boolean exactlyMatch = false;
             String[] appArray = rule.getLimitApp().split(",");
             for (String app : appArray) {
+                // 如果匹配app
                 if (requester.equals(app)) {
                     exactlyMatch = true;
                     break;
@@ -52,11 +54,14 @@ final class AuthorityRuleChecker {
             contain = exactlyMatch;
         }
 
+        // 获取策略
         int strategy = rule.getStrategy();
+        // 黑名单策略，且存在
         if (strategy == RuleConstant.AUTHORITY_BLACK && contain) {
             return false;
         }
 
+        // 白名单策略，且不存在
         if (strategy == RuleConstant.AUTHORITY_WHITE && !contain) {
             return false;
         }

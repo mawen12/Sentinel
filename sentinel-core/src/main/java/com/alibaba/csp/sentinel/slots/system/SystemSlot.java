@@ -24,7 +24,9 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
- * A {@link ProcessorSlot} that dedicates to {@link SystemRule} checking.
+ * 决定{@link SystemRule}校验的{@link ProcessorSlot}实现。
+ *
+ * 当{@link SystemRule}检验失败时，抛出{@link SystemBlockException}。
  *
  * @author jialiang.linjl
  * @author leyou
@@ -33,9 +35,10 @@ import com.alibaba.csp.sentinel.spi.Spi;
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
+        // 执行系统规则校验
         SystemRuleManager.checkSystem(resourceWrapper, count);
+        // 进入完成
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 

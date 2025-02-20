@@ -19,14 +19,35 @@ import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * Callback for entering {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot} (passed and blocked).
+ * 用于当进入{@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot}时触发的回调。
+ * 进入被分为{@code passed}和{@code blocked}。
  *
  * @author Eric Zhao
  * @since 0.2.0
  */
 public interface ProcessorSlotEntryCallback<T> {
 
+    /**
+     * 在请求通过后触发的回调
+     *
+     * @param context 当前上下文
+     * @param resourceWrapper 资源包装器
+     * @param param 相关对象，例如{@link com.alibaba.csp.sentinel.node.Node}
+     * @param count 申请的Token总数
+     * @param args 原始调用参数
+     * @throws Exception
+     */
     void onPass(Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args) throws Exception;
 
+    /**
+     * 当请求阻塞后触发的回调
+     *
+     * @param ex Sentinel阻塞异常
+     * @param context 当前上下文
+     * @param resourceWrapper 资源包装器
+     * @param param 相关对象，例如{@link com.alibaba.csp.sentinel.node.Node}
+     * @param count 申请的Token总数
+     * @param args 原始调用参数
+     */
     void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, T param, int count, Object... args);
 }

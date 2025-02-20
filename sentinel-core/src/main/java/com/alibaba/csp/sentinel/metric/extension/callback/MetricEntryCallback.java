@@ -25,7 +25,7 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * Metric extension entry callback.
+ * 指标插件扩展的entry回调
  *
  * @author Carpenter Lee
  * @since 1.6.1
@@ -33,25 +33,28 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class MetricEntryCallback implements ProcessorSlotEntryCallback<DefaultNode> {
 
     @Override
-    public void onPass(Context context, ResourceWrapper rw, DefaultNode param, int count, Object... args)
-        throws Exception {
+    public void onPass(Context context, ResourceWrapper rw, DefaultNode param, int count, Object... args) throws Exception {
+        // 获取指标插件
         for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             if (m instanceof AdvancedMetricExtension) {
                 ((AdvancedMetricExtension) m).onPass(rw, count, args);
             } else {
+                // 增加线程数
                 m.increaseThreadNum(rw.getName(), args);
+                // 增加请求通过数
                 m.addPass(rw.getName(), count, args);
             }
         }
     }
 
     @Override
-    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param,
-                          int count, Object... args) {
+    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count, Object... args) {
+        // 获取指标插件
         for (MetricExtension m : MetricExtensionProvider.getMetricExtensions()) {
             if (m instanceof AdvancedMetricExtension) {
                 ((AdvancedMetricExtension) m).onBlocked(resourceWrapper, count, context.getOrigin(), ex, args);
             } else {
+                // 增加请求阻塞数
                 m.addBlock(resourceWrapper.getName(), count, context.getOrigin(), ex, args);
             }
         }

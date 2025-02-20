@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * A processor slot that is responsible for flow control by frequent ("hot spot") parameters.
  *
+ * 用于对热点参数进行流量控制的{@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot}实现。
+ *
  * @author jialiang.linjl
  * @author Eric Zhao
  * @since 0.2.0
@@ -35,13 +37,14 @@ import java.util.List;
 public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
+        // 当该资源未配置参数流控规则时，跳过处理
         if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
             return;
         }
 
+        // 执行参数流控检查
         checkFlow(resourceWrapper, count, args);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
@@ -64,15 +67,20 @@ public class ParamFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void checkFlow(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        // 参数为空时，跳过检查
         if (args == null) {
             return;
         }
+        // TODO by mawen repeat check
         if (!ParamFlowRuleManager.hasRules(resourceWrapper.getName())) {
             return;
         }
+        // 获取关联该资源的参数流控规则
         List<ParamFlowRule> rules = ParamFlowRuleManager.getRulesOfResource(resourceWrapper.getName());
 
+        // 遍历规则，进行校验
         for (ParamFlowRule rule : rules) {
+            // 按照实际参数长度修正规则中的参数
             applyRealParamIdx(rule, args.length);
 
             // Initialize the parameter metrics.

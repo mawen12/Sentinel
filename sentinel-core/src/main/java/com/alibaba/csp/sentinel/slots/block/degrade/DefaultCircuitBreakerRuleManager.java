@@ -76,11 +76,20 @@ public final class DefaultCircuitBreakerRuleManager {
         }
     }
 
+    /**
+     * 当断路器不存在时，根据降级规则创建断路器
+     *
+     * @param resourceName
+     * @return 返回默认断路器
+     */
     static List<CircuitBreaker> getDefaultCircuitBreakers(String resourceName) {
+        // 规则不存在，直接返回
         if (rules == null || rules.isEmpty()) {
             return null;
         }
+        // 获取断路器列表
         List<CircuitBreaker> circuitBreakers = DefaultCircuitBreakerRuleManager.circuitBreakers.get(resourceName);
+        // 如果断路器尚不存在，但是存在降级规则，并且该资源未被排除，则使用降级规则创建断路器
         if (circuitBreakers == null && !rules.isEmpty() && !excludedResource.contains(resourceName)) {
             circuitBreakers = new ArrayList<>();
             for (DegradeRule rule : rules) {

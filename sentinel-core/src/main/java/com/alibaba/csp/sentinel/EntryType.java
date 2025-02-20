@@ -23,11 +23,11 @@ package com.alibaba.csp.sentinel;
  */
 public enum EntryType {
     /**
-     * 输入
+     * 入站
      */
     IN,
     /**
-     * 输出
+     * 出站
      */
     OUT;
 

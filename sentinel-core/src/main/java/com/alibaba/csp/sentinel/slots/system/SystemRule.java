@@ -18,11 +18,11 @@ package com.alibaba.csp.sentinel.slots.system;
 import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 
 /**
- * Sentinel 系统规则使入站流量与容量达到平衡。它考虑了平均RT，QPS和线程数。
+ * Sentinel系统规则使入站流量与容量达到平衡。它考虑了平均RT，QPS和线程数。
  * 它还提供了系统负载的测量，但仅适用于Linux。
  *
- * <p>我们推荐协调{@link #avgRt}, {@link #qps}, {@link #highestSystemLoad} 和 {@link #maxThread}，
- * 使得系统运行在安全级别。
+ * <p>我们推荐协调{@link #avgRt}, {@link #qps}, {@link #highestSystemLoad}
+ * 和 {@link #maxThread}，使得系统运行在安全级别。
  *
  * <p>为了适当地设置阈值，可能需要进行性能测试。
  *
@@ -33,23 +33,23 @@ import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 public class SystemRule extends AbstractRule {
 
     /**
-     * 负值意味着不需要检测阈值
+     * 最高的系统使用率负值意味着不需要检测阈值
      */
     private double highestSystemLoad = -1;
     /**
-     * CPU使用率，范围在[0, 1]
+     * 最高的CPU使用率，范围在[0, 1]，负值意味着不需要检测阈值
      */
     private double highestCpuUsage = -1;
     /**
-     * 负值意味着不需要检测阈值
+     * 每秒查询数，负值意味着不需要检测阈值
      */
     private double qps = -1;
     /**
-     * 负值意味着不需要检测阈值
+     * 平均响应时间，负值意味着不需要检测阈值
      */
     private long avgRt = -1;
     /**
-     * 负值意味着不需要检测阈值
+     * 最大线程数，负值意味着不需要检测阈值
      */
     private long maxThread = -1;
 

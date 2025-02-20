@@ -21,6 +21,8 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 /**
  * 权限规则旨在根据请求来源进行限制
  *
+ * <p>{@link AbstractRule#getLimitApp()}存储黑/白名单的列表，使用英文逗号分隔
+ *
  * @author youji.zj
  */
 public class AuthorityRule extends AbstractRule {

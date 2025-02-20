@@ -45,11 +45,10 @@ public class CtSph implements Sph {
     private static final Object[] OBJECTS0 = new Object[0];
 
     /**
-     * 相同的资源即{@link ResourceWrapper#equals(Object)}，
-     * 将共享同一个{@link ProcessorSlotChain}，
+     * 相同的资源即{@link ResourceWrapper#equals(Object)}，将共享同一个{@link ProcessorSlotChain}，
      * 无论其存在于哪个{@link Context}。
      */
-    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap = new HashMap<ResourceWrapper, ProcessorSlotChain>();
+    private static volatile Map<ResourceWrapper/* 资源包装器 */, ProcessorSlotChain/* 处理器Slot链 */> chainMap = new HashMap<ResourceWrapper, ProcessorSlotChain>();
 
     /**
      * 全局的类锁
@@ -117,6 +116,16 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
+    /**
+     * 按参数申请带有优先级或不带优先级的{@link Entry}
+     *
+     * @param resourceWrapper 代表受保护资源的包装器
+     * @param count 要申请Token的总数
+     * @param prioritized 是否优先
+     * @param args 参数
+     * @return
+     * @throws BlockException
+     */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
         // 获取上下文
@@ -124,7 +133,7 @@ public class CtSph implements Sph {
         if (context instanceof NullContext) {
             /**
              * 当出现{@link NullContext}时，代表了上下文的数量已经超过了阈值。
-             * 因此此处仅进入entry，无需执行任何规则检查。
+             * 此时仅进入entry，无需执行任何规则检查。
              */
             return new CtEntry(resourceWrapper, null, context);
         }
@@ -134,11 +143,12 @@ public class CtSph implements Sph {
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
 
-        // Global switch is close, no rule checking will do.
+        // 如果全局开关是关闭状态，将不会执行任何规则检查
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 获取该资源的处理器Slot
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -178,25 +188,25 @@ public class CtSph implements Sph {
      * @throws BlockException 如果满足阻塞条件（指标超出了任何阈值）
      */
     public Entry entry(ResourceWrapper resourceWrapper, int count, Object... args) throws BlockException {
+        // 获取不带优先级的entry
         return entryWithPriority(resourceWrapper, count, false, args);
     }
 
     /**
-     * Get {@link ProcessorSlotChain} of the resource. new {@link ProcessorSlotChain} will
-     * be created if the resource doesn't relate one.
+     * 获取与该资源相关的{@link ProcessorSlotChain}。
+     * 如果资源尚未关联，将被创建一个新的{@link ProcessorSlotChain}。
      *
-     * <p>Same resource({@link ResourceWrapper#equals(Object)}) will share the same
-     * {@link ProcessorSlotChain} globally, no matter in which {@link Context}.<p/>
+     * <p>相同资源将全局共享同一个{@link ProcessorSlotChain}，而不用关心其在哪一个{@link Context}中。
+     * 将根据{@link ResourceWrapper#equals(Object)}来确认是否为同一个资源。
      *
-     * <p>
-     * Note that total {@link ProcessorSlot} count must not exceed {@link Constants#MAX_SLOT_CHAIN_SIZE},
-     * otherwise null will return.
-     * </p>
+     * <p>需要主要的是，{@link ProcessorSlot}的总数不能超过{@link Constants#MAX_SLOT_CHAIN_SIZE}，
+     * 否则将返回{@code null}。
      *
      * @param resourceWrapper target resource
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+        //
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -317,6 +327,7 @@ public class CtSph implements Sph {
 
     @Override
     public Entry entry(String name, EntryType type, int count, Object... args) throws BlockException {
+        // 构造基于String的资源包装器
         StringResourceWrapper resource = new StringResourceWrapper(name, type);
         return entry(resource, count, args);
     }

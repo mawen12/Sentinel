@@ -25,20 +25,20 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
- * A {@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot} that is response for logging block exceptions
- * to provide concrete logs for troubleshooting.
+ * 记录{@link BlockException}以提供用于异常排除的具体日志的
+ * {@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot}实现。
  */
 @Spi(order = Constants.ORDER_LOG_SLOT)
 public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args)
-        throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args) throws Throwable {
         try {
+            // entry 完成
             fireEntry(context, resourceWrapper, obj, count, prioritized, args);
-        } catch (BlockException e) {
-            EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(),
-                context.getOrigin(), e.getRule() != null ? e.getRule().getId() : null, count);
+        } catch (BlockException e) {// 捕获阻塞异常
+            // 记录阻塞异常到日志中
+            EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(), context.getOrigin(), e.getRule() != null ? e.getRule().getId() : null, count);
             throw e;
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);
@@ -48,6 +48,7 @@ public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         try {
+            // exit完成
             fireExit(context, resourceWrapper, count, args);
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exit exception", e);

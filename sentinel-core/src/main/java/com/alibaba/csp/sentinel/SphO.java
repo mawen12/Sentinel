@@ -28,38 +28,36 @@ import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 /**
- * Conceptually, physical or logical resource that need protection should be
- * surrounded by an entry. The requests to this resource will be blocked if any
- * criteria is met, eg. when any {@link Rule}'s threshold is exceeded. Once blocked,
- * {@link SphO}#entry() will return false.
+ * 从概念上来讲，被保护的物理或逻辑资源应该被entry包围。
+ * 在请求到达资源后，如果满足任何条件，当任何{@link Rule}的阈值被超过时，
+ * 其应当被阻塞。一旦被阻塞，{@link SphO#entry()}将返回{@code false}。
  *
- * <p>
- * To configure the criteria, we can use <code>XXXRuleManager.loadRules()</code> to add rules. eg.
- * {@link FlowRuleManager#loadRules(List)}, {@link DegradeRuleManager#loadRules(List)},
- * {@link SystemRuleManager#loadRules(List)}.
- * </p>
+ * <p>为了配置条件，我们可以使用{@code XXXRuleManager.loadRules}来添加规则，
+ * 主要有以下方法：
+ * <ol>
+ *     <li>{@link FlowRuleManager#loadRules(List)}</li>
+ *     <li>{@link DegradeRuleManager#loadRules(List)}</li>
+ *     <li>{@link SystemRuleManager#loadRules(List)}</li>
+ * </ol>
  *
- * <p>
- * Following code is an example. {@code "abc"} represent a unique name for the
- * protected resource:
- * </p>
+ * <p>代码实例：{@code "abc"}代表受保护资源的唯一名称。
+ * <pre>{@code
+ *  public void foo() {
+ *      if (SphO.entry("abc") {
+ *          try {
+ *              // business logic
+ *          } finally {
+ *              // must exit()
+ *              SphO.exit();
+ *          }
+ *      } else {
+ *          // failed to entry the protected resource.
+ *      }
+ *  }
+ * }</pre>
  *
- * <pre>
- * public void foo() {
- *    if (SphO.entry("abc")) {
- *        try {
- *            // business logic
- *        } finally {
- *            SphO.exit(); // must exit()
- *        }
- *    } else {
- *        // failed to enter the protected resource.
- *    }
- * }
- * </pre>
- *
- * Make sure {@code SphO.entry()} and {@link SphO#exit()} be paired in the same thread,
- * otherwise {@link ErrorEntryFreeException} will be thrown.
+ * <p>确保{@link SphO#entry(String)}和{@link SphO#exit()}在同一个线程中成对出现。
+ * 否则将抛出{@link ErrorEntryFreeException}异常。
  *
  * @author jialiang.linjl
  * @author leyou

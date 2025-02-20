@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.slots.block.degrade;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /***
+ * 降级异常，由{@link DegradeSlot}检测并抛出。
+ *
  * @author youji.zj
  */
 public class DegradeException extends BlockException {

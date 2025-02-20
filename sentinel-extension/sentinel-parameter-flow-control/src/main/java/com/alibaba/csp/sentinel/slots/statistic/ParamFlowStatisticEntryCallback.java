@@ -24,6 +24,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetric;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 
 /**
+ * 基于参数流控统计的entry回调实现
+ *
  * @author Eric Zhao
  * @since 0.2.0
  */
@@ -31,18 +33,18 @@ public class ParamFlowStatisticEntryCallback implements ProcessorSlotEntryCallba
 
     @Override
     public void onPass(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, Object... args) {
-        // The "hot spot" parameter metric is present only if parameter flow rules for the resource exist.
+        // 仅当该资源存在参数流控规则时，才会提供热点参数指标
         ParameterMetric parameterMetric = ParameterMetricStorage.getParamMetric(resourceWrapper);
 
         if (parameterMetric != null) {
+            // 增加线程总数
             parameterMetric.addThreadCount(args);
         }
     }
 
     @Override
-    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param,
-                          int count, Object... args) {
-        // Here we don't add block count here because checking the type of block exception can affect performance.
-        // We add the block count when throwing the ParamFlowException instead.
+    public void onBlocked(BlockException ex, Context context, ResourceWrapper resourceWrapper, DefaultNode param, int count, Object... args) {
+        // 此处我们不会增加阻塞总数，因为校验阻塞异常的类型会影响性能。
+        // 我们将采取在抛出ParamFlowException时增加阻塞总数的方式来替代。
     }
 }

@@ -42,46 +42,58 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class ParamFlowChecker {
 
-    public static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count,
-                                    Object... args) {
+    public static boolean passCheck(ResourceWrapper resourceWrapper, /*@Valid*/ ParamFlowRule rule, /*@Valid*/ int count, Object... args) {
+        // 当参数为空时，直接返回true
         if (args == null) {
             return true;
         }
 
+        // 获取要检查参数的索引
         int paramIdx = rule.getParamIdx();
+        // 如果实际参数个数小于指定所索引，直接返回true
         if (args.length <= paramIdx) {
             return true;
         }
 
-        // Get parameter value.
+        // 获取参数值
         Object value = args[paramIdx];
 
-        // Assign value with the result of paramFlowKey method
+        // 使用paramFlowKey方法的结果分配值
         if (value instanceof ParamFlowArgument) {
             value = ((ParamFlowArgument) value).paramFlowKey();
         }
-        // If value is null, then pass
+        // 如果值为空，直接返回true
         if (value == null) {
             return true;
         }
 
+        // 集群模式下，且基于QPS流控策略时，基于集群检查
         if (rule.isClusterMode() && rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             return passClusterCheck(resourceWrapper, rule, count, value);
         }
 
+        // 非集群模式下，基于本地检查
         return passLocalCheck(resourceWrapper, rule, count, value);
     }
 
-    private static boolean passLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
-                                          Object value) {
+    /**
+     * 执行本地检查
+     *
+     * @param resourceWrapper 资源包装器
+     * @param rule 参数流控规则
+     * @param count 申请令牌总数
+     * @param value 要校验的参数值
+     * @return 校验结果
+     */
+    private static boolean passLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count, Object value) {
         try {
-            if (Collection.class.isAssignableFrom(value.getClass())) {
+            if (Collection.class.isAssignableFrom(value.getClass())) { // 对于集合类型的检查
                 for (Object param : ((Collection) value)) {
                     if (!passSingleValueCheck(resourceWrapper, rule, count, param)) {
                         return false;
                     }
                 }
-            } else if (value.getClass().isArray()) {
+            } else if (value.getClass().isArray()) {// 对于数组类型的参数检查
                 int length = Array.getLength(value);
                 for (int i = 0; i < length; i++) {
                     Object param = Array.get(value, i);
@@ -89,7 +101,7 @@ public final class ParamFlowChecker {
                         return false;
                     }
                 }
-            } else {
+            } else {// 单值参数检查
                 return passSingleValueCheck(resourceWrapper, rule, count, value);
             }
         } catch (Throwable e) {
@@ -99,10 +111,18 @@ public final class ParamFlowChecker {
         return true;
     }
 
-    static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
-                                        Object value) {
-        if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
-            if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {
+    /**
+     * 对单值进行校验
+     *
+     * @param resourceWrapper 资源包装器
+     * @param rule 参数流控规则
+     * @param acquireCount 申请的令牌总数
+     * @param value 参数值
+     * @return 校验结果
+     */
+    static boolean passSingleValueCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount, Object value) {
+        if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {// 基于降级的QPS策略
+            if (rule.getControlBehavior() == RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER) {// 使用速率限制器
                 return passThrottleLocalCheck(resourceWrapper, rule, acquireCount, value);
             } else {
                 return passDefaultLocalCheck(resourceWrapper, rule, acquireCount, value);
@@ -193,25 +213,28 @@ public final class ParamFlowChecker {
         }
     }
 
-    static boolean passThrottleLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount,
-                                          Object value) {
+    static boolean passThrottleLocalCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int acquireCount, Object value) {
+        // 获取该资源的参数指标
         ParameterMetric metric = getParameterMetric(resourceWrapper);
+        // 获取该规则的时间计数器
         CacheMap<Object, AtomicLong> timeRecorderMap = metric == null ? null : metric.getRuleTimeCounter(rule);
+        // 为空的时候，返回通过
         if (timeRecorderMap == null) {
             return true;
         }
 
-        // Calculate max token count (threshold)
+        // 计算最大的令牌总数
         Set<Object> exclusionItems = rule.getParsedHotItems().keySet();
+        // 获取令牌总数
         long tokenCount = (long) rule.getCount();
         if (exclusionItems.contains(value)) {
             tokenCount = rule.getParsedHotItems().get(value);
         }
-
         if (tokenCount == 0) {
             return false;
         }
 
+        // 计算预期申请这么多数量的token/已申请的token总数的
         long costTime = Math.round(1.0 * 1000 * acquireCount * rule.getDurationInSec() / tokenCount);
         while (true) {
             long currentTime = TimeUtil.currentTimeMillis();
@@ -267,18 +290,19 @@ public final class ParamFlowChecker {
         }
     }
 
-    private static boolean passClusterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
-                                            Object value) {
+    private static boolean passClusterCheck(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count, Object value) {
         try {
+            // 将值转换为集合
             Collection<Object> params = toCollection(value);
 
+            // 获取令牌服务
             TokenService clusterService = pickClusterService();
             if (clusterService == null) {
-                // No available cluster client or server, fallback to local or
-                // pass in need.
+                // 当没有可用的集群客户端或服务器时，需要触发fallback，转而执行本地检查
                 return fallbackToLocalOrPass(resourceWrapper, rule, count, params);
             }
 
+            // 获取参数令牌
             TokenResult result = clusterService.requestParamToken(rule.getClusterConfig().getFlowId(), count, params);
             switch (result.getStatus()) {
                 case TokenResultStatus.OK:
@@ -294,16 +318,19 @@ public final class ParamFlowChecker {
         }
     }
 
-    private static boolean fallbackToLocalOrPass(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count,
-                                                 Object value) {
+    private static boolean fallbackToLocalOrPass(ResourceWrapper resourceWrapper, ParamFlowRule rule, int count, Object value) {
+        // 如果允许回退到local，那就执行本地检查
         if (rule.getClusterConfig().isFallbackToLocalWhenFail()) {
             return passLocalCheck(resourceWrapper, rule, count, value);
         } else {
-            // The rule won't be activated, just pass.
+            // 规则不会生效，直接通过
             return true;
         }
     }
 
+    /**
+     * @return 获取集群中的令牌服务
+     */
     private static TokenService pickClusterService() {
         if (ClusterStateManager.isClient()) {
             return TokenClientProvider.getClient();

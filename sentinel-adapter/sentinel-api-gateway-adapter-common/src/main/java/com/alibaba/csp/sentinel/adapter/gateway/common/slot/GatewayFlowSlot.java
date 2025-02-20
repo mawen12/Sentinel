@@ -30,6 +30,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParameterMetricStorage;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 /**
+ * 用于网关限流的{@link com.alibaba.csp.sentinel.slotchain.ProcessorSlot}实现。
+ *
  * @author Eric Zhao
  * @since 1.6.1
  */
@@ -37,28 +39,32 @@ import com.alibaba.csp.sentinel.spi.Spi;
 public class GatewayFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resource, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
+    public void entry(Context context, ResourceWrapper resource, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
+        // 检查网关参数限流
         checkGatewayParamFlow(resource, count, args);
 
+        // 进入完成
         fireEntry(context, resource, node, count, prioritized, args);
     }
 
     private void checkGatewayParamFlow(ResourceWrapper resourceWrapper, int count, Object... args)
         throws BlockException {
+        // 参数为空，不进行校验
         if (args == null) {
             return;
         }
 
+        // 获取该资源对应的网关规则
         List<ParamFlowRule> rules = GatewayRuleManager.getConvertedParamRules(resourceWrapper.getName());
         if (rules == null || rules.isEmpty()) {
             return;
         }
 
         for (ParamFlowRule rule : rules) {
-            // Initialize the parameter metrics.
+            // 初始化参数指标
             ParameterMetricStorage.initParamMetricsFor(resourceWrapper, rule);
 
+            // 校验参数
             if (!ParamFlowChecker.passCheck(resourceWrapper, rule, count, args)) {
                 String triggeredParam = "";
                 if (args.length > rule.getParamIdx()) {
@@ -72,6 +78,7 @@ public class GatewayFlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        // 退出完成
         fireExit(context, resourceWrapper, count, args);
     }
 }

@@ -33,32 +33,21 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 
 /**
- * <p>
- * Sentinel System Rule makes the inbound traffic and capacity meet. It takes
- * average rt, qps, thread count of incoming requests into account. And it also
- * provides a measurement of system's load, but only available on Linux.
- * </p>
- * <p>
- * rt, qps, thread count is easy to understand. If the incoming requests'
- * rt,qps, thread count exceeds its threshold, the requests will be
- * rejected.however, we use a different method to calculate the load.
- * </p>
- * <p>
- * Consider the system as a pipeline，transitions between constraints result in
- * three different regions (traffic-limited, capacity-limited and danger area)
- * with qualitatively different behavior. When there isn’t enough request in
- * flight to fill the pipe, RTprop determines behavior; otherwise, the system
- * capacity dominates. Constraint lines intersect at inflight = Capacity ×
- * RTprop. Since the pipe is full past this point, the inflight –capacity excess
- * creates a queue, which results in the linear dependence of RTT on inflight
- * traffic and an increase in system load.In danger area, system will stop
- * responding.<br/>
- * Referring to BBR algorithm to learn more.
- * </p>
- * <p>
- * Note that {@link SystemRule} only effect on inbound requests, outbound traffic
- * will not limit by {@link SystemRule}
- * </p>
+ * Sentinel 系统规则使入站流量和容量满足。它包含平均响应时间、QPS、入站请求的线程总数。
+ * 它同时提供系统负载的策略，但仅在Linux系统上提供。
+ *
+ * <p>响应时间、QPS、线程数量很容易理解。如果入站请求的RT、QPS、线程总数超过了阈值，该请求
+ * 将被拒绝。然而，我们使用不同的方法来计算负载。
+ *
+ * <p>将系统视作管道，约束之间的转换会导致三个不同区域（流量受限、容量受限、危险区域），
+ * 具有性质上不同的行为。当飞行中没有足够的请求来填充管道时，RPprop决定行为；否则，系统容量
+ * 占主导地位。约束线再飞行中=容量*RTprop处相交。由于管道在此点之后已满，飞行中容量过剩会
+ * 创建一个队列，从而导致RTT对飞行中流量的线性依赖以及系统负载的增加，在危险区域，系统将停止
+ * 响应。
+ *
+ * <p>更多内容可参考BBR算法。
+ *
+ * <p>需要注意{@link SystemRule}仅影响入站请求，出站流量将不会被{@link SystemRule}限制。
  *
  * @author jialiang.linjl
  * @author leyou
@@ -129,36 +118,42 @@ public final class SystemRuleManager {
      * @return a new copy of the rules.
      */
     public static List<SystemRule> getRules() {
-
+        // TODO by mawen jdk7 棱形语法
         List<SystemRule> result = new ArrayList<SystemRule>();
+        // 确保开了状态检查
         if (!checkSystemStatus.get()) {
             return result;
         }
 
+        // 最高系统使用率
         if (highestSystemLoadIsSet) {
             SystemRule loadRule = new SystemRule();
             loadRule.setHighestSystemLoad(highestSystemLoad);
             result.add(loadRule);
         }
 
+        // 最高CPU使用率
         if (highestCpuUsageIsSet) {
             SystemRule rule = new SystemRule();
             rule.setHighestCpuUsage(highestCpuUsage);
             result.add(rule);
         }
 
+        // 最大系统响应时间
         if (maxRtIsSet) {
             SystemRule rtRule = new SystemRule();
             rtRule.setAvgRt(maxRt);
             result.add(rtRule);
         }
 
+        // 最大线程数
         if (maxThreadIsSet) {
             SystemRule threadRule = new SystemRule();
             threadRule.setMaxThread(maxThread);
             result.add(threadRule);
         }
 
+        // QPS
         if (qpsIsSet) {
             SystemRule qpsRule = new SystemRule();
             qpsRule.setQps(qps);
@@ -282,58 +277,63 @@ public final class SystemRuleManager {
     }
 
     /**
-     * Apply {@link SystemRule} to the resource. Only inbound traffic will be checked.
+     * 将{@link SystemRule}应用到资源上，仅处理入站流量。
      *
-     * @param resourceWrapper the resource.
-     * @throws BlockException when any system rule's threshold is exceeded.
+     * @param resourceWrapper 资源包装器
+     * @throws BlockException 当达到任何系统规则的阈值时，将抛出该异常
      */
     public static void checkSystem(ResourceWrapper resourceWrapper, int count) throws BlockException {
+        // 对于空的资源包装器，不处理
         if (resourceWrapper == null) {
             return;
         }
-        // Ensure the checking switch is on.
+        // 确保开启了检查开关
         if (!checkSystemStatus.get()) {
             return;
         }
 
-        // for inbound traffic only
+        // 仅处理入站流量
         if (resourceWrapper.getEntryType() != EntryType.IN) {
             return;
         }
 
-        // total qps
+        // 获取当前的QPS
         double currentQps = Constants.ENTRY_NODE.passQps();
+        // 确保总的QPS<=阈值
         if (currentQps + count > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
         }
 
-        // total thread
+        // 获取当前的线程数
         int currentThread = Constants.ENTRY_NODE.curThreadNum();
+        // 确保当前线程数<=最大线程数
         if (currentThread > maxThread) {
             throw new SystemBlockException(resourceWrapper.getName(), "thread");
         }
 
+        // 获取平均响应时间
         double rt = Constants.ENTRY_NODE.avgRt();
+        // 确保当前响应时间<=最大响应时间
         if (rt > maxRt) {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
 
-        // load. BBR algorithm.
+        // 加载BBR算法
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }
 
-        // cpu usage
+        // 计算CPU使用率
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
             throw new SystemBlockException(resourceWrapper.getName(), "cpu");
         }
     }
 
     private static boolean checkBbr(int currentThread) {
-        if (currentThread > 1 &&
-            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+        // 确保当前线程数<=successQps*minRT/1000
+        if (currentThread > 1 && currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;

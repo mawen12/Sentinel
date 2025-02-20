@@ -21,7 +21,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import java.util.Objects;
 
 /**
- * 当资源处于不可用状态时便会使用降级。这些资源将会在下一个定义的时间窗口被降级。
+ * 当资源处于不可用状态时便会触发降级。这些资源将会在下一个定义的时间窗口被降级。
  * 有两种方式检查一个资源是否稳定：
  * <ul>
  *     <li>
@@ -30,7 +30,7 @@ import java.util.Objects;
  *         该资源将被降级，意味着在下一个时间窗口{@link #timeWindow}内对该资源的访问都会被阻塞。
  *     </li>
  *     <li>
- *         异常率（Exception ratio），当每秒异常总数与成功QPS的比率超过阈值，在到来的时间窗口，
+ *         异常率（Exception ratio），当每秒异常总数与成功QPS的比率超过阈值，在下一个时间窗口，
  *         对该资源的访问都会被阻塞。
  *     </li>
  * </ul>
@@ -49,9 +49,9 @@ public class DegradeRule extends AbstractRule {
     /**
      * 断路器策略：
      * <ul>
-     *     <li>0: average RT</li>
-     *     <li>1: exception ratio</li>
-     *     <li>2: exception count</li>
+     *     <li>0: 基于平均响应时间(average RT)</li>
+     *     <li>1: 基于异常率(exception ratio)</li>
+     *     <li>2: 基于异常总数(exception count)</li>
      * </ul>
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
@@ -67,7 +67,7 @@ public class DegradeRule extends AbstractRule {
     private double count;
 
     /**
-     * 当断路器打开时的恢复时间（秒）。当超时后，断路器将进入半开状态，允许尝试部分请求
+     * 当断路器打开时的恢复时间（秒）。当超时后，断路器将从OPEN进入HALF_OPEN，允许尝试部分请求
      */
     private int timeWindow;
 

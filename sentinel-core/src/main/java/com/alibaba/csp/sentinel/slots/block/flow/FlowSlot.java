@@ -28,41 +28,35 @@ import com.alibaba.csp.sentinel.util.function.Function;
 import java.util.Collection;
 
 /**
- * <p>
- * Combined the runtime statistics collected from the previous
- * slots (NodeSelectorSlot, ClusterNodeBuilderSlot, and StatisticSlot), FlowSlot
- * will use pre-set rules to decide whether the incoming requests should be
- * blocked.
- * </p>
+ * 从之前的插槽{@link com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot}、
+ * {@link com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot}、
+ * {@link com.alibaba.csp.sentinel.slots.statistic.StatisticSlot}中组合运行时的统计信息。
+ * 该类将使用预设的规则来决定是否到来的请求是否被阻塞。
  *
- * <p>
- * {@code SphU.entry(resourceName)} will throw {@code FlowException} if any rule is
- * triggered. Users can customize their own logic by catching {@code FlowException}.
- * </p>
+ * <p>如果触发了任何规则，{@link com.alibaba.csp.sentinel.SphU#entry(String)}将抛出{@link FlowException}
+ * 异常，用户可以通过捕获{@link FlowException}来自定义它们自己的逻辑。
  *
- * <p>
- * One resource can have multiple flow rules. FlowSlot traverses these rules
- * until one of them is triggered or all rules have been traversed.
- * </p>
+ * <p>一个资源可以存在多个流控规则。该类将遍历这些规则，直到其中一个被触发，或者所有规则都遍历完毕。
  *
- * <p>
- * Each {@link FlowRule} is mainly composed of these factors: grade, strategy, path. We
- * can combine these factors to achieve different effects.
- * </p>
+ * <p>每一个{@link FlowRule}主要由几个因素组成：降级、策略、路径。我们可以组合这些因素来获得不同的影响。
  *
- * <p>
- * The grade is defined by the {@code grade} field in {@link FlowRule}. Here, 0 for thread
- * isolation and 1 for request count shaping (QPS). Both thread count and request
- * count are collected in real runtime, and we can view these statistics by
- * following command:
- * </p>
+ * <p>降级是被定义在{@link FlowRule#grade}字段中的。
+ * <ul>
+ *     <li>0: 用于线程隔离</li>
+ *     <li>1: 请求计数整形（QPS）</li>
+ * </ul>
+ * 以上两个数据都在运行时被收集，我们可以通过以下命令查看这些统计：
+ * <pre>{@code
+ *  curl http://localhost:8719/tree
  *
- * <pre>
- * curl http://localhost:8719/tree
+ *  idx id    thread pass  blocked   success total aRt   1m-pass   1m-block   1m-all   exception
+ *  2   abc647 0      460    46          46   1    27      630       276        897      0
+ * }</pre>
  *
- * idx id    thread pass  blocked   success total aRt   1m-pass   1m-block   1m-all   exception
- * 2   abc647 0      460    46          46   1    27      630       276        897      0
- * </pre>
+ * <ul>
+ *     <li>{@code thread} 用于</li>
+ * </ul>
+ *
  *
  * <ul>
  * <li>{@code thread} for the count of threads that is currently processing the resource</li>

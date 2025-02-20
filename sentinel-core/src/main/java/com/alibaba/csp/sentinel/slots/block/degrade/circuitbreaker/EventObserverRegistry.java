@@ -23,14 +23,14 @@ import java.util.Map;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 /**
- * <p>Registry for circuit breaker event observers.</p>
+ * 用于断路器事件观察者的注册器
  *
  * @author Eric Zhao
  * @since 1.8.0
  */
 public class EventObserverRegistry {
 
-    private final Map<String, CircuitBreakerStateChangeObserver> stateChangeObserverMap = new HashMap<>();
+    private final Map<String/* 断路器状态 */, CircuitBreakerStateChangeObserver/* 对应状态的观察者 */> stateChangeObserverMap = new HashMap<>();
 
     /**
      * Register a circuit breaker state change observer.

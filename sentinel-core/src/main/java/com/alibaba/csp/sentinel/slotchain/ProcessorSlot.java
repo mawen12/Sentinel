@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.slotchain;
 import com.alibaba.csp.sentinel.context.Context;
 
 /**
- * A container of some process and ways of notification when the process is finished.
+ * 某些处理的容器以及在处理完成时的通知方式
  *
  * @author qinan.qn
  * @author jialiang.linjl
@@ -28,50 +28,48 @@ import com.alibaba.csp.sentinel.context.Context;
 public interface ProcessorSlot<T> {
 
     /**
-     * Entrance of this slot.
+     * 此插槽的入口
      *
-     * @param context         current {@link Context}
-     * @param resourceWrapper current resource
-     * @param param           generics parameter, usually is a {@link com.alibaba.csp.sentinel.node.Node}
-     * @param count           tokens needed
-     * @param prioritized     whether the entry is prioritized
-     * @param args            parameters of the original call
+     * @param context         当前上下文
+     * @param resourceWrapper 当前资源的包装器
+     * @param param           泛型参数，通常是{@link com.alibaba.csp.sentinel.node.Node}
+     * @param count           申请的Token数量
+     * @param prioritized     entry是否优先
+     * @param args            原始调用的参数
      * @throws Throwable blocked exception or unexpected error
      */
-    void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, boolean prioritized,
-               Object... args) throws Throwable;
+    void entry(Context context, ResourceWrapper resourceWrapper, T param, int count, boolean prioritized, Object... args) throws Throwable;
 
     /**
-     * Means finish of {@link #entry(Context, ResourceWrapper, Object, int, boolean, Object...)}.
+     * 表示{@link #entry(Context, ResourceWrapper, Object, int, boolean, Object...)}的完成
      *
-     * @param context         current {@link Context}
-     * @param resourceWrapper current resource
-     * @param obj             relevant object (e.g. Node)
-     * @param count           tokens needed
-     * @param prioritized     whether the entry is prioritized
-     * @param args            parameters of the original call
+     * @param context         当前上下文
+     * @param resourceWrapper 当前资源的包装器
+     * @param obj             相关对象，例如{@link com.alibaba.csp.sentinel.node.Node}
+     * @param count           申请的Token数量
+     * @param prioritized     entry是否优先
+     * @param args            原始调用的参数
      * @throws Throwable blocked exception or unexpected error
      */
-    void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized,
-                   Object... args) throws Throwable;
+    void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args) throws Throwable;
 
     /**
-     * Exit of this slot.
+     * 退出该插槽
      *
-     * @param context         current {@link Context}
-     * @param resourceWrapper current resource
-     * @param count           tokens needed
-     * @param args            parameters of the original call
+     * @param context         当前上下文
+     * @param resourceWrapper 当前资源的包装器
+     * @param count           申请的Token数量
+     * @param args            原始调用的参数
      */
     void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args);
 
     /**
-     * Means finish of {@link #exit(Context, ResourceWrapper, int, Object...)}.
+     * 表示{@link #exit(Context, ResourceWrapper, int, Object...)}的完成
      *
-     * @param context         current {@link Context}
-     * @param resourceWrapper current resource
-     * @param count           tokens needed
-     * @param args            parameters of the original call
+     * @param context         当前上下文
+     * @param resourceWrapper 当前资源的包装器
+     * @param count           申请的Token数量
+     * @param args            原始调用的参数
      */
     void fireExit(Context context, ResourceWrapper resourceWrapper, int count, Object... args);
 }

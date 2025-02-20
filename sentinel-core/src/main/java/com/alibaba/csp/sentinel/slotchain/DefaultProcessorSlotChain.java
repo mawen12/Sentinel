@@ -18,11 +18,17 @@ package com.alibaba.csp.sentinel.slotchain;
 import com.alibaba.csp.sentinel.context.Context;
 
 /**
+ * 责任链设计模式的应用。
+ *
  * @author qinan.qn
  * @author jialiang.linjl
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
+    /**
+     * 默认头部的{@link #entry(Context, ResourceWrapper, Object, int, boolean, Object...)}
+     * 和{@link #exit(Context, ResourceWrapper, int, Object...)}不做任何处理。
+     */
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
@@ -37,20 +43,27 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
         }
 
     };
+    /**
+     * 初始尾部和头部指向同一个
+     */
     AbstractLinkedProcessorSlot<?> end = first;
 
     @Override
     public void addFirst(AbstractLinkedProcessorSlot<?> protocolProcessor) {
+        // 设置该处理器的下一个为之前头部的下一个
         protocolProcessor.setNext(first.getNext());
+        // 将该处理器插槽放到头部的下一个
         first.setNext(protocolProcessor);
-        if (end == first) {
+        if (end == first) {// 如果头尾相同，此时新加元素，需要将尾部指向新加入的处理器插槽
             end = protocolProcessor;
         }
     }
 
     @Override
     public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
+        // 将该处理器放到当前尾部的下一个
         end.setNext(protocolProcessor);
+        // 将尾部指向新加入的处理器插槽
         end = protocolProcessor;
     }
 
