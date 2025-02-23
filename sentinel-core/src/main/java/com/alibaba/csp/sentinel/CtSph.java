@@ -151,21 +151,20 @@ public class CtSph implements Sph {
         // 获取该资源的处理器Slot
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
-        /*
-         * Means amount of resources (slot chain) exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE},
-         * so no rule checking will be done.
-         */
+        // 意味着资源数量超过了{@link Constants.MAX_SLOT_CHAIN_SIZE}，随意不会进行规则检查
         if (chain == null) {
             return new CtEntry(resourceWrapper, null, context);
         }
 
+        // 创建Entry
         Entry e = new CtEntry(resourceWrapper, chain, context, count, args);
         try {
+            // 使用处理器链进行规则检查
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
-        } catch (BlockException e1) {
+        } catch (BlockException e1) {// 出现阻塞异常，直接退出，并抛出异常
             e.exit(count, args);
             throw e1;
-        } catch (Throwable e1) {
+        } catch (Throwable e1) {// 出现非阻塞异常，记录异常信息，不抛出异常
             // This should not happen, unless there are errors existing in Sentinel internal.
             RecordLog.info("Sentinel unexpected exception", e1);
         }
@@ -206,17 +205,19 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
-        //
+        // 获取该资源对应的处理器链
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
+        // 双检
         if (chain == null) {
             synchronized (LOCK) {
                 chain = chainMap.get(resourceWrapper);
                 if (chain == null) {
-                    // Entry size limit.
+                    // 检查是否超出了最大上限
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
 
+                    // 创建新的链
                     chain = SlotChainProvider.newSlotChain();
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);

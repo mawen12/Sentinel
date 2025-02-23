@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
- * The fundamental data structure for metric statistics in a time span.
+ * 在某个时间跨度内的指标统计的基本数据结构
  *
  * @author jialiang.linjl
  * @author Eric Zhao
