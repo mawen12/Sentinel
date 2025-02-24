@@ -24,24 +24,16 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.context.Context;
 
 /**
- * Each {@link SphU}#entry() will return an {@link Entry}. This class holds information of current invocation:<br/>
- *
+ * 每一个{@link SphU}#entry()方法都会返回一个{@link Entry}。该类持有当前调用的信息：
  * <ul>
- * <li>createTime, the create time of this entry, using for rt statistics.</li>
- * <li>current {@link Node}, that is statistics of the resource in current context.</li>
- * <li>origin {@link Node}, that is statistics for the specific origin. Usually the
- * origin could be the Service Consumer's app name, see
- * {@link ContextUtil#enter(String name, String origin)} </li>
- * <li>{@link ResourceWrapper}, that is resource name.</li>
- * <br/>
+ *  <li>createTime: 当前Entry的创建时间，用于RT统计</li>
+ *  <li>current {@link Node}: 在当前上下文中该资源的统计信息</li>
+ *  <li>origin {@link Node}: 特定原始的统计数据，通常来说原始源应该为服务消费者的App名称，查看{@link ContextUtil#enter(String, String)}</li>
+ *  <li>{@link ResourceWrapper}：资源名称</li>
  * </ul>
  *
- * <p>
- * A invocation tree will be created if we invoke SphU#entry() multi times in the same {@link Context},
- * so parent or child entry may be held by this to form the tree. Since {@link Context} always holds
- * the current entry in the invocation tree, every {@link Entry#exit()} call should modify
- * {@link Context#setCurEntry(Entry)} as parent entry of this.
- * </p>
+ * <p>如果我们在同一个{@link Context}中多次调用{@link SphU}#entry()，就会创建一个调用树，
+ * 因此父条目或子条目可能会由此保存形成树。
  *
  * @author qinan.qn
  * @author jialiang.linjl
@@ -55,22 +47,50 @@ public abstract class Entry implements AutoCloseable {
 
     protected static final Object[] OBJECTS0 = new Object[0];
 
+    /**
+     * 该条目的创建时间，用于计算RT
+     */
     private final long createTimestamp;
+    /**
+     * 该条目的完成时间，用于计算RT
+     */
     private long completeTimestamp;
 
+    /**
+     * 当前节点，保存了该资源的统计信息
+     */
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
+    /**
+     * 特定原始的节点，通常应为服务消费者
+     */
     private Node originNode;
 
+    /**
+     * 执行出现的异常
+     */
     private Throwable error;
+
+    /**
+     * 执行出现的阻塞异常
+     */
     private BlockException blockError;
 
+    /**
+     * 资源名称
+     */
     protected final ResourceWrapper resourceWrapper;
 
+    /**
+     * 总数
+     */
     protected final int count;
 
+    /**
+     * 方法调用的参数
+     */
     protected final Object[] args;
 
     public Entry(ResourceWrapper resourceWrapper) {
@@ -89,9 +109,9 @@ public abstract class Entry implements AutoCloseable {
     }
 
     /**
-     * Complete the current resource entry and restore the entry stack in context.
-     * Do not need to carry count or args parameter, initialization does
-     * @throws ErrorEntryFreeException if entry in current context does not match current entry
+     * 完成当前资源条目，并在上下文中恢复入口栈。不需要携带count或参数，初始化时才需要。
+     *
+     * @throws ErrorEntryFreeException 如果当前上下文中的条目与当前条目不匹配
      */
     public void exit() throws ErrorEntryFreeException {
         exit(count, args);
@@ -102,7 +122,7 @@ public abstract class Entry implements AutoCloseable {
     }
 
     /**
-     * Equivalent to {@link #exit()}. Support try-with-resources since JDK 1.7.
+     * 等于{@link #exit()}
      *
      * @since 1.5.0
      */
@@ -112,28 +132,26 @@ public abstract class Entry implements AutoCloseable {
     }
 
     /**
-     * Exit this entry. This method should invoke if and only if once at the end of the resource protection.
+     * 退出该条目。该方法应在资源保护结束时且仅当调用一次时调用
      *
-     * @param count tokens to release.
-     * @param args extra parameters
-     * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
+     * @param count 释放的令牌数
+     * @param args 退出参数
+     * @throws ErrorEntryFreeException 如果当前上下文中的条目与当前条目不匹配
      */
     public abstract void exit(int count, Object... args) throws ErrorEntryFreeException;
 
     /**
-     * Exit this entry.
+     * 退出该条目。
      *
-     * @param count tokens to release.
-     * @param args extra parameters
-     * @return next available entry after exit, that is the parent entry.
-     * @throws ErrorEntryFreeException, if {@link Context#getCurEntry()} is not this entry.
+     * @param count 释放的令牌数
+     * @param args 退出参数
+     * @return 在推出后下一个可用的条目，即父条目
+     * @throws ErrorEntryFreeException, 如果当前上下文中的条目与当前条目不匹配
      */
     protected abstract Entry trueExit(int count, Object... args) throws ErrorEntryFreeException;
 
     /**
-     * Get related {@link Node} of the parent {@link Entry}.
-     *
-     * @return
+     * @return 返回父级相关的 {@link Node}
      */
     public abstract Node getLastNode();
 

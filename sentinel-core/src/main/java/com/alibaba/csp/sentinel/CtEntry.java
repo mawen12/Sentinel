@@ -27,18 +27,33 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.util.function.BiConsumer;
 
 /**
- * Linked entry within current context.
+ * 当前上下文内的链接条目
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 class CtEntry extends Entry {
 
+    /**
+     * 父级
+     */
     protected Entry parent = null;
+    /**
+     * 子集
+     */
     protected Entry child = null;
 
+    /**
+     * 过滤器链
+     */
     protected ProcessorSlot<Object> chain;
+    /**
+     * 当前上下文
+     */
     protected Context context;
+    /**
+     * 退出时回调的监听器
+     */
     protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
 
     CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
