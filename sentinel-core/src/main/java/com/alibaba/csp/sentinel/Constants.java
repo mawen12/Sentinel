@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.slotchain.StringResourceWrapper;
 import com.alibaba.csp.sentinel.util.VersionUtil;
 
 /**
- * Universal constants of Sentinel.
+ * Sentinel的通用常数
  *
  * @author qinan.qn
  * @author youji.zj
@@ -31,6 +31,9 @@ import com.alibaba.csp.sentinel.util.VersionUtil;
  */
 public final class Constants {
 
+    /**
+     * Sentinel版本
+     */
     public static final String SENTINEL_VERSION = VersionUtil.getVersion("1.8.8");
 
     public final static int MAX_CONTEXT_NAME_SIZE = 2000;

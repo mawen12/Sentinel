@@ -102,14 +102,22 @@ class CtEntry extends Entry {
         }
     }
 
+    /**
+     * 在退出时执行的处理逻辑
+     *
+     * @param context 当前上下文
+     * @param count 释放的令牌总数
+     * @param args 参数
+     * @throws ErrorEntryFreeException
+     */
     protected void exitForContext(Context context, int count, Object... args) throws ErrorEntryFreeException {
         if (context != null) {
-            // Null context should exit without clean-up.
+            // Null Context 无需在退出时清理
             if (context instanceof NullContext) {
                 return;
             }
 
-            if (context.getCurEntry() != this) {
+            if (context.getCurEntry() != this) {// 实体不相等时，抛出ErrorEntryFreeException
                 String curEntryNameInContext = context.getCurEntry() == null ? null
                     : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
@@ -123,25 +131,25 @@ class CtEntry extends Entry {
                     resourceWrapper.getName());
                 throw new ErrorEntryFreeException(errorMessage);
             } else {
-                // Go through the onExit hook of all slots.
+                // 触发exit
                 if (chain != null) {
                     chain.exit(context, resourceWrapper, count, args);
                 }
-                // Go through the existing terminate handlers (associated to this invocation).
+                // 触发exitHandler
                 callExitHandlersAndCleanUp(context);
 
-                // Restore the call stack.
+                // 恢复调用堆栈为父级条目
                 context.setCurEntry(parent);
                 if (parent != null) {
                     ((CtEntry) parent).child = null;
                 }
                 if (parent == null) {
-                    // Default context (auto entered) will be exited automatically.
+                    // 默认上下文（自动进入）将自动退出
                     if (ContextUtil.isDefaultContext(context)) {
                         ContextUtil.exit();
                     }
                 }
-                // Clean the reference of context in current entry to avoid duplicate exit.
+                // 清除当前条目中的上下文引用，避免重复退出
                 clearEntryContext();
             }
         }
