@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Flow rule controller.
+ * 流控规则
  *
  * @author leyou
  * @author Eric Zhao
@@ -58,12 +58,21 @@ public class FlowControllerV1 {
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
+
     @Autowired
     private AppManagement appManagement;
 
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
+    /**
+     * 返回指定服务下指定应用的流控规则列表
+     *
+     * @param app 应用名称，即{@code spring.application.name}，亦可成为服务名称
+     * @param ip 应用的ip，亦可称为实例ip
+     * @param port 应用的端口，亦可称为实例端口
+     * @return
+     */
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
     public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
@@ -82,8 +91,11 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "given ip does not belong to given app");
         }
         try {
+            // 读取客户端读取流控规则
             List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            // 写入到内存中
             rules = repository.saveAll(rules);
+            // 返回
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying flow rules", throwable);
@@ -141,9 +153,16 @@ public class FlowControllerV1 {
         return null;
     }
 
+    /**
+     * 添加流控规则
+     *
+     * @param entity
+     * @return
+     */
     @PostMapping("/rule")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
+        // 参数校验
         Result<FlowRuleEntity> checkResult = checkEntityInternal(entity);
         if (checkResult != null) {
             return checkResult;
@@ -155,8 +174,10 @@ public class FlowControllerV1 {
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
         try {
+            // 保存到内存中
             entity = repository.save(entity);
 
+            // 将内存中属于该实例的所有流控规则发送到实例上
             publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
@@ -166,6 +187,21 @@ public class FlowControllerV1 {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @param app
+     * @param limitApp
+     * @param resource
+     * @param grade
+     * @param count
+     * @param strategy
+     * @param refResource
+     * @param controlBehavior
+     * @param warmUpPeriodSec
+     * @param maxQueueingTimeMs
+     * @return
+     */
     @PutMapping("/save.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiUpdateFlowRule(Long id, String app,

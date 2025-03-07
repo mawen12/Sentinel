@@ -21,28 +21,50 @@ import com.alibaba.csp.sentinel.slots.block.flow.ClusterFlowConfig;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
 /**
+ * 流控规则实体
+ *
  * @author leyou
  */
 public class FlowRuleEntity implements RuleEntity {
-
+    /**
+     * 规则ID
+     */
     private Long id;
+    /**
+     * 规则应用的服务名称
+     */
     private String app;
+    /**
+     * 规则应用的实例ip
+     */
     private String ip;
+    /**
+     * 规则应用的实例端口
+     */
     private Integer port;
+    /**
+     * 来源应用
+     */
     private String limitApp;
+    /**
+     *
+     */
     private String resource;
     /**
-     * 0为线程数;1为qps
+     * 阈值类型：0为线程数;1为qps
      */
     private Integer grade;
+    /**
+     * 单机阈值
+     */
     private Double count;
     /**
-     * 0为直接限流;1为关联限流;2为链路限流
+     * 流控模式：0为直接限流;1为关联限流;2为链路限流
      ***/
     private Integer strategy;
     private String refResource;
     /**
-     * 0. default, 1. warm up, 2. rate limiter
+     * 流控效果：0. default, 1. warm up, 2. rate limiter
      */
     private Integer controlBehavior;
     private Integer warmUpPeriodSec;
@@ -51,6 +73,9 @@ public class FlowRuleEntity implements RuleEntity {
      */
     private Integer maxQueueingTimeMs;
 
+    /**
+     * 是否集群
+     */
     private boolean clusterMode;
     /**
      * Flow rule config for cluster mode.

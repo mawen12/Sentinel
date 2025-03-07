@@ -86,7 +86,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Communicate with Sentinel client.
+ * 与Sentinel客户端通信
  *
  * @author leyou
  */
@@ -122,9 +122,21 @@ public class SentinelApiClient {
     private static final String FETCH_GATEWAY_FLOW_RULE_PATH = "gateway/getRules";
     private static final String MODIFY_GATEWAY_FLOW_RULE_PATH = "gateway/updateRules";
 
+    /**
+     * 流控规则
+     */
     private static final String FLOW_RULE_TYPE = "flow";
+    /**
+     * 熔断规则
+     */
     private static final String DEGRADE_RULE_TYPE = "degrade";
+    /**
+     * 系统规则
+     */
     private static final String SYSTEM_RULE_TYPE = "system";
+    /**
+     * 授权规则
+     */
     private static final String AUTHORITY_TYPE = "authority";
 
     private CloseableHttpAsyncClient httpClient;
@@ -366,7 +378,10 @@ public class SentinelApiClient {
             params = new HashMap<>(1);
             params.put("type", type);
         }
+
+        // 发起请求
         return executeCommand(ip, port, api, params, false)
+                // 转换结果
                 .thenApply(json -> JSON.parseArray(json, ruleType));
     }
     
@@ -380,6 +395,9 @@ public class SentinelApiClient {
                 params = new HashMap<>(1);
                 params.put("type", type);
             }
+            /**
+             * 异步执行，同步等待
+             */
             return fetchItemsAsync(ip, port, api, type, ruleType).get();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Error when fetching items from api: {} -> {}", api, type, e);
@@ -428,8 +446,7 @@ public class SentinelApiClient {
             AssertUtil.notEmpty(app, "Bad app name");
             AssertUtil.notEmpty(ip, "Bad machine IP");
             AssertUtil.isTrue(port > 0, "Bad machine port");
-            String data = JSON.toJSONString(
-                entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
+            String data = JSON.toJSONString(entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);
             params.put("type", type);
             params.put("data", data);
@@ -466,9 +483,19 @@ public class SentinelApiClient {
         return fetchItems(ip, port, CLUSTER_NODE_PATH, type, NodeVo.class);
     }
 
+    /**
+     * 从指定服务实例读取流控规则
+     *
+     * @param app 应用名称，即{@code spring.application.name}，亦可成为服务名称
+     * @param ip 应用的ip，亦可称为实例ip
+     * @param port 应用的端口，亦可称为实例端口
+     * @return 该应用上的流控规则
+     */
     public List<FlowRuleEntity> fetchFlowRuleOfMachine(String app, String ip, int port) {
+        // 读取流控规则
         List<FlowRule> rules = fetchRules(ip, port, FLOW_RULE_TYPE, FlowRule.class);
         if (rules != null) {
+            // 从 FlowRule -> FlowRuleEntity
             return rules.stream().map(rule -> FlowRuleEntity.fromFlowRule(app, ip, port, rule))
                 .collect(Collectors.toList());
         } else {
