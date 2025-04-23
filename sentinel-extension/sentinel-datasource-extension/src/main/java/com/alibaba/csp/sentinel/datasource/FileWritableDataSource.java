@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
- * A {@link WritableDataSource} based on file.
+ * 基于文件的可写数据源。
  *
  * @param <T> data type
  * @author Eric Zhao
@@ -35,9 +35,15 @@ public class FileWritableDataSource<T> implements WritableDataSource<T> {
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
     private final Converter<T, String> configEncoder;
+    /**
+     * 写入的目标文件
+     */
     private final File file;
     private final Charset charset;
 
+    /**
+     * 触发写操作时加锁
+     */
     private final Lock lock = new ReentrantLock(true);
 
     public FileWritableDataSource(String filePath, Converter<T, String> configEncoder) {

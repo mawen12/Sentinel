@@ -99,12 +99,14 @@ public class DefaultClusterTokenClient implements ClusterTokenClient {
             return;
         }
         try {
+            // 停止当前客户端
             if (transportClient != null) {
                 transportClient.stop();
             }
-            // Replace with new, even if the new client is not ready.
+            // 替换成创建新的客户端
             this.transportClient = new NettyTransportClient(config.getServerHost(), config.getServerPort());
             this.serverDescriptor = new TokenServerDescriptor(config.getServerHost(), config.getServerPort());
+            // 启动新客户端
             startClientIfScheduled();
             RecordLog.info("[DefaultClusterTokenClient] New client created: {}", serverDescriptor);
         } catch (Exception ex) {

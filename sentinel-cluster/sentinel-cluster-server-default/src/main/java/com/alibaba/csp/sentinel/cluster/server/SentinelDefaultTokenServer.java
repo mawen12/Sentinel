@@ -68,12 +68,7 @@ public class SentinelDefaultTokenServer implements ClusterTokenServer {
 
     public SentinelDefaultTokenServer(boolean embedded) {
         this.embedded = embedded;
-        ClusterServerConfigManager.addTransportConfigChangeObserver(new ServerTransportConfigObserver() {
-            @Override
-            public void onTransportConfigChange(ServerTransportConfig config) {
-                changeServerConfig(config);
-            }
-        });
+        ClusterServerConfigManager.addTransportConfigChangeObserver(this::changeServerConfig);
         initNewServer();
     }
 

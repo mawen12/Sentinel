@@ -15,6 +15,11 @@
  */
 package com.alibaba.csp.sentinel.property;
 
+/**
+ * 将{@link #configLoad(Object)}委托给{@link #configUpdate(Object)}的方法。
+ *
+ * @param <T>
+ */
 public abstract class SimplePropertyListener<T> implements PropertyListener<T> {
 
     @Override

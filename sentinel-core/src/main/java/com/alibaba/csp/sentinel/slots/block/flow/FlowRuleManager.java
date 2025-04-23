@@ -35,13 +35,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * <p>
- * One resources can have multiple rules. And these rules take effects in the following order:
+ * 一个资源可以有多个规则。这些规则按以下顺序生效：
  * <ol>
- * <li>requests from specified caller</li>
- * <li>no specified caller</li>
+ *     <li>来自特定调用者的请求</li>
+ *     <li>未指定调用者</li>
  * </ol>
- * </p>
  *
  * @author jialiang.linjl
  * @author Eric Zhao
@@ -49,9 +47,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class FlowRuleManager {
 
+    /**
+     * 流控规则
+     */
     private static volatile RuleManager<FlowRule> flowRules = new RuleManager<>();
 
+    /**
+     * 用于更新流控规则的监听器
+     */
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
+    /**
+     *
+     */
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     /** the corePool size of SCHEDULER must be set at 1, so the two task ({@link #startMetricTimerListener()} can run orderly by the SCHEDULER **/
@@ -144,6 +151,9 @@ public class FlowRuleManager {
         return true;
     }
 
+    /**
+     * 用于更新流控规则的监听器
+     */
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override

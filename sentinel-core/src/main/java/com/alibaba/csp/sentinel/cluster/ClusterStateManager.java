@@ -27,18 +27,26 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
- * <p>
- * Global state manager for Sentinel cluster.
- * This enables switching between cluster token client and server mode.
- * </p>
+ * Sentinel集群的全局状态管理器
+ *
+ * <p>允许在cluster token client和server模式间切换
  *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public final class ClusterStateManager {
 
+    /**
+     * 集群角色 CLIENT
+     */
     public static final int CLUSTER_CLIENT = 0;
+    /**
+     * 集群角色 SERVER
+     */
     public static final int CLUSTER_SERVER = 1;
+    /**
+     * 集群状态 未启动
+     */
     public static final int CLUSTER_NOT_STARTED = -1;
 
     private static volatile int mode = CLUSTER_NOT_STARTED;
@@ -258,7 +266,7 @@ public final class ClusterStateManager {
     }
 
     /**
-     * Apply given state to cluster mode.
+     * 设置集群状态
      *
      * @param state valid state to apply
      */

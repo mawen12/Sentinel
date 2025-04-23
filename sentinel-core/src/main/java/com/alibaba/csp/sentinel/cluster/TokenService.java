@@ -18,7 +18,9 @@ package com.alibaba.csp.sentinel.cluster;
 import java.util.Collection;
 
 /**
- * 流控服务接口
+ * 令牌服务
+ *
+ * <p>令牌就是一种流控
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -26,7 +28,7 @@ import java.util.Collection;
 public interface TokenService {
 
     /**
-     * 从远程令牌服务器请求令牌
+     * 申请指定数量的令牌
      *
      * @param ruleId 唯一规则ID
      * @param acquireCount 申请的令牌总数
@@ -36,7 +38,7 @@ public interface TokenService {
     TokenResult requestToken(Long ruleId, int acquireCount, boolean prioritized);
 
     /**
-     * 从远程令牌服务器为特定参数请求令牌
+     * 为特殊参数申请指定数量的令牌
      *
      * @param ruleId 唯一规则ID
      * @param acquireCount 申请的令牌总数
@@ -46,7 +48,7 @@ public interface TokenService {
     TokenResult requestParamToken(Long ruleId, int acquireCount, Collection<Object> params);
 
     /**
-     * 从远程令牌服务器申请并发令牌
+     * 申请并发令牌
      *
      * @param clientAddress 请求所属的地址
      * @param ruleId 唯一规则ID
@@ -55,7 +57,7 @@ public interface TokenService {
      */
     TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
     /**
-     * 从远程令牌服务器异步释放并发令牌
+     * 释放并发令牌
      *
      * @param tokenId 唯一令牌ID
      */

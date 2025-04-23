@@ -26,20 +26,30 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
 /**
  * 用于记录除{@link BlockException}外的其他异常
  *
+ * <p>如果异常同时存在于{@code trace}和{@code ignore}，
+ * 则{@code ignore}具有更高的优先级。
+ *
+ * <p>执行顺序：
+ * <ul>
+ *     <li>最高：{@code exceptionPredicate}</li>
+ *     <li>其次：{@code ignore}</li>
+ *     <li>最低：{@code trace}</li>
+ * </ul>
+ *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class Tracer {
 
     /**
-     * 跟踪的异常
+     * 跟踪的异常列表
      *
      * @see SentinelResource#exceptionsToTrace()
      */
     protected static Class<? extends Throwable>[] traceClasses;
 
     /**
-     * 忽略的异常
+     * 忽略的异常列表
      *
      * @see SentinelResource#exceptionsToIgnore()
      */

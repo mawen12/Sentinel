@@ -20,9 +20,20 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * 代表可变的属性。即值可以被修改。当值发生变化时，通知监听器。
+ *
+ * @param <T>
+ */
 public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
 
+    /**
+     * 监听器，当值发生变化时，会被通知
+     */
     protected Set<PropertyListener<T>> listeners = new CopyOnWriteArraySet<>();
+    /**
+     * 属性值
+     */
     private T value = null;
 
     public DynamicSentinelProperty() {
@@ -36,6 +47,7 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
     @Override
     public void addListener(PropertyListener<T> listener) {
         listeners.add(listener);
+        // 初次注册时，便会通知
         listener.configLoad(value);
     }
 
@@ -47,12 +59,15 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
     @Override
     public boolean updateValue(T newValue) {
         if (isEqual(value, newValue)) {
+            // 值相等，不被视作更新
             return false;
         }
         RecordLog.info("[DynamicSentinelProperty] Config will be updated to: {}", newValue);
 
+        // 更新值
         value = newValue;
         for (PropertyListener<T> listener : listeners) {
+            // 通知监听器
             listener.configUpdate(newValue);
         }
         return true;

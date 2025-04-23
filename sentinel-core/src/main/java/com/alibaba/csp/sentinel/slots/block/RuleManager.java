@@ -22,18 +22,37 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Unified rule management tool, mainly used for matching and caching of regular rules and simple rules.
+ * 同一规则管理工具，主要用于匹配和缓存指定规则和简单规则。
+ *
  * @author quguai
  * @date 2023/10/9 20:35
  */
 public class RuleManager<R> {
 
+    /**
+     * 原始规则
+     */
     private Map<String, List<R>> originalRules = new HashMap<>();
+    /**
+     * 正则匹配规则
+     */
     private Map<Pattern, List<R>> regexRules = new HashMap<>();
+    /**
+     * 缓存正则匹配的规则
+     */
     private Map<String, List<R>> regexCacheRules = new HashMap<>();
+    /**
+     * 简单规则
+     */
     private Map<String, List<R>> simpleRules = new HashMap<>();
+    /**
+     * 生成器
+     */
     private Function<List<R>, List<R>> generator = Function.identity();
 
+    /**
+     * 条件
+     */
     private final Predicate<R> predicate;
 
     public RuleManager() {

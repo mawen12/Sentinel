@@ -34,8 +34,8 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 
 /**
- * A read-only {@code DataSource} with Nacos backend. When the data in Nacos backend has been modified,
- * Nacos will automatically push the new value so that the dynamic configuration can be real-time.
+ * 基于Nacos的只读数据源。当Nacos上的数据被编辑时，
+ * Nacos会自动推送新值，因此可以实现动态配置刷新。
  *
  * @author Eric Zhao
  */
@@ -44,20 +44,29 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
     private static final int DEFAULT_TIMEOUT = 3000;
 
     /**
-     * Single-thread pool. Once the thread pool is blocked, we throw up the old task.
+     * 只有单个线程的线程池，一旦线程池被阻塞，将丢弃最旧的任务，
      */
     private final ExecutorService pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
         new ArrayBlockingQueue<Runnable>(1), new NamedThreadFactory("sentinel-nacos-ds-update", true),
         new ThreadPoolExecutor.DiscardOldestPolicy());
 
+    /**
+     * Nacos的配置监听器
+     */
     private final Listener configListener;
+    /**
+     * 数据的分组ID
+     */
     private final String groupId;
+    /**
+     * 数据的ID
+     */
     private final String dataId;
+    /**
+     *
+     */
     private final Properties properties;
 
-    /**
-     * Note: The Nacos config might be null if its initialization failed.
-     */
     private ConfigService configService = null;
 
     /**
@@ -101,12 +110,15 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
             public void receiveConfigInfo(final String configInfo) {
                 RecordLog.info("[NacosDataSource] New property value received for (properties: {}) (dataId: {}, groupId: {}): {}",
                     properties, dataId, groupId, configInfo);
+                // 解析配置
                 T newValue = NacosDataSource.this.parser.convert(configInfo);
-                // Update the new value to the property.
+                // 更新配置
                 getProperty().updateValue(newValue);
             }
         };
+        // 初始化Nacos，并注册监听器
         initNacosListener();
+        // 加载配置
         loadInitialConfig();
     }
 

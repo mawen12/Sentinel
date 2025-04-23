@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.cluster.client.config;
 /**
  * 服务变更观察者
  *
+ * <p>下游的客户端收到后会重新连接到新服务器
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */

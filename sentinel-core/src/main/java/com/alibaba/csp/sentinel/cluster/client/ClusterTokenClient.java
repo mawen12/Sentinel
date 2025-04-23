@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.cluster.TokenServerDescriptor;
 import com.alibaba.csp.sentinel.cluster.TokenService;
 
 /**
- * 用于分布式流量控制的令牌客户端接口
+ * 负责与令牌服务端通信的客户端
  *
  * @author Eric Zhao
  * @since 1.4.0

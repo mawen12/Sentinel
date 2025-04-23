@@ -24,14 +24,12 @@ import java.nio.charset.Charset;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
- * <p>
- * A {@link ReadableDataSource} based on file. This class will automatically
- * fetches the backend file every isModified period.
- * </p>
- * <p>
- * Limitations: Default read buffer size is 1 MB. If file size is greater than
- * buffer size, exceeding bytes will be ignored. Default charset is UTF-8.
- * </p>
+ * 基于文件的自动刷新配置的数据源。默认每隔3s检查一次文件是否更新，
+ *
+ * <p>默认的读缓冲区大小为1M，如果文件超过1M，则需要单独配置。
+ * 否则会导致读取失败。
+ *
+ * <p>默认编码为UTF-8。
  *
  * @author Carpenter Lee
  * @author Eric Zhao
@@ -113,6 +111,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
         try {
             inputStream = new FileInputStream(file);
             FileChannel channel = inputStream.getChannel();
+            // 超过缓冲区大小，抛出异常
             if (channel.size() > buf.length) {
                 throw new IllegalStateException(file.getAbsolutePath() + " file size=" + channel.size()
                     + ", is bigger than bufSize=" + buf.length + ". Can't read");
@@ -131,6 +130,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
 
     @Override
     protected boolean isModified() {
+        // 通过文件的编辑时间戳来确认是否发生修改
         long curLastModified = file.lastModified();
         if (curLastModified != this.lastModified) {
             this.lastModified = curLastModified;

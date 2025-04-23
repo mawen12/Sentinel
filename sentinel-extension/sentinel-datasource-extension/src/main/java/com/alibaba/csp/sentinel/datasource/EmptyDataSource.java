@@ -19,10 +19,9 @@ import com.alibaba.csp.sentinel.property.NoOpSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
- * A {@link ReadableDataSource} based on nothing. {@link EmptyDataSource#getProperty()} will always return the same cached
- * {@link SentinelProperty} that doing nothing.
- * <br/>
- * This class is used when we want to use default settings instead of configs from the {@link ReadableDataSource}.
+ * Noop实现。不执行任何逻辑。
+ *
+ * <p>该类用于使用默认配置，而不是从数据源读取配置。
  *
  * @author leyou
  */

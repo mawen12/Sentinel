@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.cluster.server;
 
 /**
- * 用于分布式流量控制的令牌服务器接口
+ * 代表令牌服务器，负责管理其生命周期
  *
  * @author Eric Zhao
  * @since 1.4.0
@@ -24,14 +24,14 @@ package com.alibaba.csp.sentinel.cluster.server;
 public interface ClusterTokenServer {
 
     /**
-     * 开始Sentinel集群服务器
+     * 启动
      *
      * @throws Exception if any error occurs
      */
     void start() throws Exception;
 
     /**
-     * 停止Sentinel集群服务器
+     * 关闭
      *
      * @throws Exception if any error occurs
      */

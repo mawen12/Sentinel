@@ -27,6 +27,14 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 /**
+ * 用于管理集群模式下客户端的配置
+ *
+ * <p>客户端配置分为两块
+ * <ul>
+ *     <li>{@link ClusterClientAssignConfig}: 带有主机和端口的信息</li>
+ *     <li>{@link ClusterClientConfig}：带有请求超时</li>
+ * </ul>
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
@@ -55,6 +63,7 @@ public final class ClusterClientConfigManager {
     private static final List<ServerChangeObserver> SERVER_CHANGE_OBSERVERS = new ArrayList<>();
 
     static {
+        // 为属性设置监听器
         bindPropertyListener();
     }
 
@@ -140,6 +149,9 @@ public final class ClusterClientConfigManager {
         }
     }
 
+    /**
+     * 监听配置项[requestTimeout]，并执行更新
+     */
     private static class ClientConfigPropertyListener implements PropertyListener<ClusterClientConfig> {
 
         @Override
@@ -169,6 +181,9 @@ public final class ClusterClientConfigManager {
         }
     }
 
+    /**
+     * 更新请求超时时间
+     */
     private static void updateClientConfigChange(ClusterClientConfig config) {
         if (config.getRequestTimeout() != requestTimeout) {
             requestTimeout = config.getRequestTimeout();
@@ -179,6 +194,7 @@ public final class ClusterClientConfigManager {
         String host = config.getServerHost();
         int port = config.getServerPort();
 
+        // 通知下游客户端
         for (ServerChangeObserver observer : SERVER_CHANGE_OBSERVERS) {
             observer.onRemoteServerChange(config);
         }

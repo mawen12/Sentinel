@@ -18,7 +18,7 @@ package com.alibaba.csp.sentinel.cluster;
 import java.util.Map;
 
 /**
- * 申请集群流量令牌的结果实体
+ * 令牌结果
  *
  * @author Eric Zhao
  * @since 1.4.0

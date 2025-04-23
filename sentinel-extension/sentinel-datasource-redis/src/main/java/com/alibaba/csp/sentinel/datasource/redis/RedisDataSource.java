@@ -41,24 +41,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>
- * A read-only {@code DataSource} with Redis backend.
- * </p>
- * <p>
- * The data source first loads initial rules from a Redis String during initialization.
- * Then the data source subscribe from specific channel. When new rules is published to the channel,
- * the data source will observe the change in realtime and update to memory.
- * </p>
- * <p>
- * Note that for consistency, users should publish the value and save the value to the ruleKey simultaneously
- * like this (using Redis transaction):
- * <pre>
+ * 基于Redis的数据源。
+ *
+ * <p>在首次加载时，从Redis的String读取。
+ * 然后订阅特定的channel，接受数据更新。
+ *
+ * <p>为了确保一致性，用户在发布配置的时候
+ * 需要同时的设置。例如使用Redis事务：
+ * <pre>{@code
  *  MULTI
  *  SET ruleKey value
  *  PUBLISH channel value
  *  EXEC
- * </pre>
- * </p>
+ * }</pre>
  *
  * @author tiger
  */
@@ -68,6 +63,9 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
 
     private final RedisClusterClient redisClusterClient;
 
+    /**
+     * Redis String 中保存配置的键名称
+     */
     private final String ruleKey;
 
     /**

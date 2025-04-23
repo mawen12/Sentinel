@@ -19,7 +19,7 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
- * The abstract readable data source provides basic functionality for loading and parsing config.
+ * 提供加载和解析配置的能力。
  *
  * @param <S> source data type
  * @param <T> target data type
@@ -28,7 +28,13 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public abstract class AbstractDataSource<S, T> implements ReadableDataSource<S, T> {
 
+    /**
+     * 解析
+     */
     protected final Converter<S, T> parser;
+    /**
+     * 属性
+     */
     protected final SentinelProperty<T> property;
 
     public AbstractDataSource(Converter<S, T> parser) {

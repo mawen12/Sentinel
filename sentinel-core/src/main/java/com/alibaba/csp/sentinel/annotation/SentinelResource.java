@@ -20,7 +20,7 @@ import com.alibaba.csp.sentinel.EntryType;
 import java.lang.annotation.*;
 
 /**
- * 定义Sentinel资源的注解
+ * 定义资源的注解
  *
  * @author Eric Zhao
  * @author zhaoyuguang

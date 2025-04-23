@@ -23,7 +23,9 @@ import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
- * A {@link ReadableDataSource} automatically fetches the backend data.
+ * 支持自动从后端获取数据的能力。
+ *
+ * <p>使用{@link ScheduledExecutorService}定时从后端获取数据，每次间隔3s。
  *
  * @param <S> source data type
  * @param <T> target data type
@@ -31,7 +33,13 @@ import com.alibaba.csp.sentinel.log.RecordLog;
  */
 public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, T> {
 
+    /**
+     * 定时调度
+     */
     private ScheduledExecutorService service;
+    /**
+     * 3s后启动，之后每隔3s执行一次
+     */
     protected long recommendRefreshMs = 3000;
 
     public AutoRefreshDataSource(Converter<S, T> configParser) {
@@ -50,8 +58,8 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private void startTimerService() {
-        service = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
+        // 创建单线程的调度服务
+        service = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -59,7 +67,9 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
                     if (!isModified()) {
                         return;
                     }
+                    // 加载配置
                     T newValue = loadConfig();
+                    // 更新配置，并由属性触发对应监听器
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
@@ -71,6 +81,7 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
     @Override
     public void close() throws Exception {
         if (service != null) {
+            // 停止调度服务
             service.shutdownNow();
             service = null;
         }

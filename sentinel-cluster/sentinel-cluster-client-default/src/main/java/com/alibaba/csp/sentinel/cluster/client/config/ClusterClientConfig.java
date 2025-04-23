@@ -16,11 +16,16 @@
 package com.alibaba.csp.sentinel.cluster.client.config;
 
 /**
+ * 代表集群模式下客户端的配置
+ *
  * @author Eric Zhao
  * @since 1.4.0
  */
 public class ClusterClientConfig {
 
+    /**
+     * 请求超时
+     */
     private Integer requestTimeout;
 
     public Integer getRequestTimeout() {

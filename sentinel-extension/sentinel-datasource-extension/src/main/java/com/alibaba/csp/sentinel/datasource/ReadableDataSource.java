@@ -18,17 +18,17 @@ package com.alibaba.csp.sentinel.datasource;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
 /**
- * The readable data source is responsible for retrieving configs (read-only).
+ * 用于获取配置的可读数据源（只读）
  *
- * @param <S> source data type
- * @param <T> target data type
+ * @param <S> 源数据类型
+ * @param <T> 目标数据类型
  * @author leyou
  * @author Eric Zhao
  */
 public interface ReadableDataSource<S, T> {
 
     /**
-     * Load data data source as the target type.
+     * 加载数据
      *
      * @return the target data.
      * @throws Exception IO or other error occurs
@@ -36,7 +36,7 @@ public interface ReadableDataSource<S, T> {
     T loadConfig() throws Exception;
 
     /**
-     * Read original data from the data source.
+     * 读取原始数据
      *
      * @return the original data.
      * @throws Exception IO or other error occurs
@@ -44,14 +44,14 @@ public interface ReadableDataSource<S, T> {
     S readSource() throws Exception;
 
     /**
-     * Get {@link SentinelProperty} of the data source.
+     * 返回数据源的{@link SentinelProperty}
      *
      * @return the property.
      */
     SentinelProperty<T> getProperty();
 
     /**
-     * Close the data source.
+     * 关闭数据源
      *
      * @throws Exception IO or other error occurs
      */

@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.property;
 
 /**
- * A {@link SentinelProperty} that will never inform the {@link PropertyListener} on it.
+ * Noop实现。并且永远不会触发监听器。
  *
  * @author leyou
  */

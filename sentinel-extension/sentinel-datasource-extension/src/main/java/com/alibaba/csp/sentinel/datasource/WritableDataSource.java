@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.datasource;
 
 /**
- * Interface of writable data source support.
+ * 用于写入配置的可写数据源
  *
  * @author Eric Zhao
  * @since 0.2.0
@@ -24,7 +24,7 @@ package com.alibaba.csp.sentinel.datasource;
 public interface WritableDataSource<T> {
 
     /**
-     * Write the {@code value} to the data source.
+     * 写入配置
      *
      * @param value value to write
      * @throws Exception IO or other error occurs
@@ -32,7 +32,7 @@ public interface WritableDataSource<T> {
     void write(T value) throws Exception;
 
     /**
-     * Close the data source.
+     * 关闭数据源
      *
      * @throws Exception IO or other error occurs
      */

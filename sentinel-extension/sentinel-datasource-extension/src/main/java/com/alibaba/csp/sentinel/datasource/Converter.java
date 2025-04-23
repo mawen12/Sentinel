@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.datasource;
 
 /**
- * Convert an object from source type {@code S} to target type {@code T}.
+ * 用于对象转换的接口
  *
  * @author leyou
  * @author Eric Zhao
@@ -24,7 +24,7 @@ package com.alibaba.csp.sentinel.datasource;
 public interface Converter<S, T> {
 
     /**
-     * Convert {@code source} to the target type.
+     * 从原类型站换到目标类型
      *
      * @param source the source object
      * @return the target object

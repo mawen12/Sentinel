@@ -16,14 +16,11 @@
 package com.alibaba.csp.sentinel.property;
 
 /**
- * <p>
- * This class holds current value of the config, and is responsible for informing all {@link PropertyListener}s
- * added on this when the config is updated.
- * </p>
- * <p>
- * Note that not every {@link #updateValue(Object newValue)} invocation should inform the listeners, only when
- * {@code newValue} is not Equals to the old value, informing is needed.
- * </p>
+ * 持有配置的值，Sentinel中全局的属性对象。
+ *
+ * <p>在配置更新时，通知所有的{@link PropertyListener}。
+ *
+ * <p>仅当配置的新值与旧值不同时，才会触发通知，如果相同，则不会触发。
  *
  * @param <T> the target type.
  * @author Carpenter Lee
@@ -31,29 +28,23 @@ package com.alibaba.csp.sentinel.property;
 public interface SentinelProperty<T> {
 
     /**
-     * <p>
-     * Add a {@link PropertyListener} to this {@link SentinelProperty}. After the listener is added,
-     * {@link #updateValue(Object)} will inform the listener if needed.
-     * </p>
-     * <p>
-     * This method can invoke multi times to add more than one listeners.
-     * </p>
+     * 注册监听器
      *
      * @param listener listener to add.
      */
     void addListener(PropertyListener<T> listener);
 
     /**
-     * Remove the {@link PropertyListener} on this. After removing, {@link #updateValue(Object)}
-     * will not inform the listener.
+     * 移除监听器
      *
      * @param listener the listener to remove.
      */
     void removeListener(PropertyListener<T> listener);
 
     /**
-     * Update the {@code newValue} as the current value of this property and inform all {@link PropertyListener}s
-     * added on this only when new {@code newValue} is not Equals to the old value.
+     * 更新配置值，并通知监听器。
+     *
+     * <p>仅当配置的新值与旧值不同时，才会触发通知，如果相同，则不会触发。
      *
      * @param newValue the new value.
      * @return true if the value in property has been updated, otherwise false
