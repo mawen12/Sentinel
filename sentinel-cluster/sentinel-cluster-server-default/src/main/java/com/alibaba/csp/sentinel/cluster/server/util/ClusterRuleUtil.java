@@ -21,6 +21,12 @@ package com.alibaba.csp.sentinel.cluster.server.util;
  */
 public final class ClusterRuleUtil {
 
+    /**
+     * id 合法
+     * 
+     * @param id
+     * @return
+     */
     public static boolean validId(Long id) {
         return id != null && id > 0;
     }

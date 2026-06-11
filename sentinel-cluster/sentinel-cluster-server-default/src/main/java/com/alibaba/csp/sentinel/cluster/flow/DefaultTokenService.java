@@ -40,12 +40,15 @@ public class DefaultTokenService implements TokenService {
         if (notValidRequest(ruleId, acquireCount)) {
             return badRequest();
         }
+
         // The rule should be valid.
+        // 读取流控规则
         FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(ruleId);
         if (rule == null) {
             return new TokenResult(TokenResultStatus.NO_RULE_EXISTS);
         }
 
+        // 申请Token
         return ClusterFlowChecker.acquireClusterToken(rule, acquireCount, prioritized);
     }
 
@@ -85,6 +88,8 @@ public class DefaultTokenService implements TokenService {
     }
 
     /**
+     * id | count 是否非法
+     * 
      * @param id id
      * @param count 总和
      * @return 请求是否非法
@@ -94,6 +99,8 @@ public class DefaultTokenService implements TokenService {
     }
 
     /**
+     * address | id | count 是否非法
+     * 
      * @param address 地址
      * @param id id
      * @param count 总和

@@ -1,0 +1,14 @@
+{
+	"files": [
+		{
+			"path": "sentinel-core/src/main/java/com/alibaba/csp/sentinel/slots/statistic/base/LeapArray.java",
+			"bookmarks": [
+				{
+					"line": 50,
+					"column": 25,
+					"label": "Sliding Window Counter"
+				}
+			]
+		}
+	]
+}

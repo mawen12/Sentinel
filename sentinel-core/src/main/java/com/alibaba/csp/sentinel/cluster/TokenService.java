@@ -56,6 +56,7 @@ public interface TokenService {
      * @return 令牌请求的结果
      */
     TokenResult requestConcurrentToken(String clientAddress,Long ruleId,int acquireCount);
+    
     /**
      * 释放并发令牌
      *

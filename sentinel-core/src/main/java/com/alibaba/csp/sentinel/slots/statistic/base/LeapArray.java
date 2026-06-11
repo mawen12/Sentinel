@@ -24,10 +24,24 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
+ * 基于 Sliding Window Counter 算法实现。
+ * 
  * Sentinel中由于统计信息指标的基础数据结构。
  *
  * <p>Leap 数组使用滑动窗口算法来统计数据。每个bucket涵盖{@link #windowLengthInMs}时间跨度，并且总的时间跨度为{@link #intervalInMs}。
  * 因此总的bucket容量为{@code sampleCount = intervalMs / windowLengthInMs}。
+ * 
+ * 滑动窗口原理：
+ *  初始参数：
+ *      - sampleCount = 5
+ *      - intervalInMs = 1000
+ *      - 推算出 windowLengthInMs = 200，因为要在 1000ms 内放5个 bucket，那么每个 bucket 所处理的时间窗口为200ms
+ *      - 推算出有5个桶，分别是：[B0(200~400ms), B1(400~600ms), B2(600~800ms), B3(800~1000ms), B4(1000~1200ms)]
+ *  处理请求：
+ *      - currentTime = 888ms
+ *      - 根据计算，当前时间落在了 B3 桶
+ *      - B3 的 windowStart = 800，是最新的桶，直接返回
+ * 
  *
  * @param <T> type of statistic data
  * @author jialiang.linjl
@@ -55,11 +69,19 @@ public abstract class LeapArray<T> {
 
     /**
      * 支持原子更新的数组引用
+     * 
+     * 作为底层存储，其长度为 sampleCount，这是一个环形数组
+     * 每一个 WindowWrap 作为一个时间窗口桶，包含：
+     *  - windowLengthInMs: 桶时长
+     *  - windowStart: 桶开始的时间戳
+     *  - value: 桶内的统计数据
      */
     protected final AtomicReferenceArray<WindowWrap<T>> array;
 
     /**
      * 仅在当前bucket过期时才会被使用的条件更新锁
+     * 
+     * 仅在 bucket 过期重置时使用，保证线程安全
      */
     private final ReentrantLock updateLock = new ReentrantLock();
 
@@ -74,14 +96,14 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
-        // 毫秒内的窗口长度 = 毫秒间隔 / 滑动窗口的桶数
+        // 桶的时间窗口长度 = 毫秒间隔 / 滑动窗口的桶数
         this.windowLengthInMs = intervalInMs / sampleCount;
         this.intervalInMs = intervalInMs;
         // 转换为秒间隔
         this.intervalInSecond = intervalInMs / 1000.0;
         this.sampleCount = sampleCount;
 
-        // 保存了桶数量的
+        // 对应桶数量的时间窗口
         this.array = new AtomicReferenceArray<>(sampleCount);
     }
 
@@ -110,39 +132,52 @@ public abstract class LeapArray<T> {
     protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
 
     /**
-     * 根据给定时间戳计算时间索引
+     * 将时间戳映射到环形数据的索引位置
+     * 通过环形哈希映射，应无限增长的时间线压缩到固定大小的环形数组中，
+     * 使得每个时间戳都能快速定位到对应的桶，同时保证数据内存占用恒定，
+     * 不随运行时间增长
      *
      * @param timeMillis 时间戳
      * @return leap数组的索引
      */
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
+        // 将绝对时间戳转换为时间窗口编号
         long timeId = timeMillis / windowLengthInMs;
-        // 计算当前索引，以便我们可以将时间戳映射到leap数组中
-        return (int)(timeId % array.length());
+        // 环形取模，映射到固定大小的环形数组中
+        return (int)(timeId % array.length()); 
     }
 
     /**
+     * 计算时间戳所在的逻辑的 bucket 时间窗口开始时间
+     * 
      * @param timeMillis 时间戳
      * @return 计算窗口开始时间
      */
     protected long calculateWindowStart(/*@Valid*/ long timeMillis) {
+        // 通过向下取整对齐的方式来获取
+        // 比如 199ms，通过 timeMillis % windowLengthInMs => 199ms % 200 = 0
         return timeMillis - timeMillis % windowLengthInMs;
     }
 
     /**
-     * 获取提供的时间戳的存储桶元素
+     * 根据给定时间戳读取其所属的 bucket 的时间窗口
+     * - 当桶不存在时，创建新的桶
+     * - 当桶过期时，重置桶
+     *
+     * 其本质上是写操作。
      *
      * @param timeMillis 以毫秒表示的合法时间戳
      * @return 获取提供的时间戳的存储桶元素，如果时间非法则返回空
      */
     public WindowWrap<T> currentWindow(long timeMillis) {
+        // 非法时间，直接返回
         if (timeMillis < 0) {
             return null;
         }
 
-        // 计算时间戳在leap数组中的索引
+        // 将时间戳映射到环形数据的索引位置
         int idx = calculateTimeIdx(timeMillis);
-        // 计算当前存储桶的开始时间
+        // 计算时间戳所在的逻辑的 bucket 时间窗口开始时间
         long windowStart = calculateWindowStart(timeMillis);
 
         /**
@@ -170,6 +205,7 @@ public abstract class LeapArray<T> {
                  * 而其他线程则让出时间片。
                  */
                 WindowWrap<T> window = new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
+                // 使用 CAS 操作更新
                 if (array.compareAndSet(idx, null, window)) {
                     // 成功更新，返回创建后的存储桶
                     return window;
@@ -190,7 +226,7 @@ public abstract class LeapArray<T> {
                  * 这说明时间在存储桶内，所以直接返回存储桶
                  */
                 return old;
-            } else if (windowStart > old.windowStart()) {// 出现第三种情况，存储同已过期，需要重置计数
+            } else if (windowStart > old.windowStart()) {// 出现第三种情况，bucket已过期，仅需要重置时间，这是因为桶是复用的
                 /*
                  *   (old)
                  *             B0       B1      B2    NULL      B4
@@ -220,6 +256,7 @@ public abstract class LeapArray<T> {
                     Thread.yield();
                 }
             } else if (windowStart < old.windowStart()) {// 不应存在的情况，老的存储桶比最新的还要早
+                // 此时仅创建桶，而不是放入到 array 中
                 return new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
             }
         }
@@ -227,6 +264,11 @@ public abstract class LeapArray<T> {
 
     /**
      * 获取在提供的时间戳之前的存储桶元素
+     * 
+     * - 桶不存在时，返回 null
+     * - 桶过期时，返回 null
+     * 
+     * 其本质上是读操作，用于查询历史数据
      *
      * @param timeMillis 已毫秒表示的合法时间戳
      * @return 提供时间戳之前的前一个存储桶元素
@@ -243,11 +285,13 @@ public abstract class LeapArray<T> {
         // 获取索引对应的存储桶元素
         WindowWrap<T> wrap = array.get(idx);
 
-        // 对于不存在的桶或过期的桶，直接返回空
+        // 检查1:全局的合法性检查
+        // 对于不存在的桶或相对于当前时间已经过期了，直接返回空
         if (wrap == null || isWindowDeprecated(wrap)) {
             return null;
         }
 
+        // 检查2:桶相对 timeMillis 已经过期
         if (wrap.windowStart() + windowLengthInMs < (timeMillis)) {
             return null;
         }

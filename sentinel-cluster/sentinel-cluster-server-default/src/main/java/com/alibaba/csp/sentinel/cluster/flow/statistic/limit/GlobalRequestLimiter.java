@@ -47,10 +47,12 @@ public final class GlobalRequestLimiter {
         if (namespace == null) {
             return false;
         }
+        // 读取该 NameSpace 的限流
         RequestLimiter limiter = GLOBAL_QPS_LIMITER_MAP.get(namespace);
         if (limiter == null) {
             return true;
         }
+        // 
         return limiter.tryPass();
     }
 

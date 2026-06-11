@@ -47,14 +47,24 @@ final class ClusterFlowChecker {
         }
     }
 
+    /**
+     * 检查是否允许通过
+     * 
+     * @param flowId 流控id
+     * @return
+     */
     static boolean allowProceed(long flowId) {
+        // 读取流控所属的 NameSpace
         String namespace = ClusterFlowRuleManager.getNamespace(flowId);
+        // 
         return GlobalRequestLimiter.tryPass(namespace);
     }
 
     static TokenResult acquireClusterToken(/*@Valid*/ FlowRule rule, int acquireCount, boolean prioritized) {
+        // 读取集群模式下的流控 id
         Long id = rule.getClusterConfig().getFlowId();
 
+        // 
         if (!allowProceed(id)) {
             return new TokenResult(TokenResultStatus.TOO_MANY_REQUEST);
         }
